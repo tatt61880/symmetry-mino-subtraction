@@ -217,7 +217,7 @@ function clickEvent(e) {
       if (count_b == 0) continue;
 
       // Is b connected?
-      if (count_b != 1) {
+      {
         let b = [];
         for (let y = 0; y < blockNumY; ++y) {
           b[y] = [];
@@ -259,7 +259,6 @@ function clickEvent(e) {
             }
           }
         }
-        if (cx == 9 && cy == 10) console.log(`${cnt}`);
         if (cnt != count_b) f = false;
       }
 
