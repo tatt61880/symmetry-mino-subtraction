@@ -7,6 +7,11 @@ const centerNumY = 6;
 const blockNumX = centerNumX * 3;
 const blockNumY = centerNumY * 3;
 const blockSize = 30;
+
+const state_none = 0;
+const state_a = 1;
+const state_b = 2;
+
 let blocks = [];
 let svg;
 
@@ -30,7 +35,26 @@ function init() {
 }
 
 function draw() {
+  while (svg.firstChild) {
+    svg.removeChild(svg.firstChild);
+  }
   let g = document.createElementNS(SVG_NS, 'g');
+
+  for (let y = 0; y < blockNumY; ++y) {
+    for (let x = 0; x < blockNumX; ++x) {
+      if (blocks[y][x]) {
+        let rect = document.createElementNS(SVG_NS, 'rect');
+        rect.setAttribute('x', blockSize * x);
+        rect.setAttribute('y', blockSize * y);
+        rect.setAttribute('width', blockSize);
+        rect.setAttribute('height', blockSize);
+        rect.setAttribute('fill', 'pink');
+        rect.setAttribute('stroke', 'none');
+        g.appendChild(rect);
+      }
+    }
+  }
+
   for (let y = 0; y <= blockNumY; ++y) {
     let line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', 0);
@@ -106,12 +130,11 @@ function pressOn(e) {
   if (2 * centerNumX <= x) return;
   if (y < centerNumY) return;
   if (2 * centerNumY <= y) return;
-  console.log(`${x} ${y}`);
 
   if (blocks[y][x]) {
-    state = 0;
+    state = state_none;
   } else {
-    state = 1;
+    state = state_a;
   }
 
   pressFlag = true;
@@ -131,7 +154,16 @@ function pressOff(e) {
 
 function clickEvent(e) {
   if (!pressFlag) return;
+
   calcXY(e);
-  if (x == prevX && y == prevY) {
-  }
+  if (x < centerNumX) return;
+  if (2 * centerNumX <= x) return;
+  if (y < centerNumY) return;
+  if (2 * centerNumY <= y) return;
+
+  if (x == prevX && y == prevY) return;
+  prevX = x;
+  prevY = y;
+  blocks[y][x] = state;
+  draw();
 }
