@@ -17,7 +17,6 @@ let points = [];
 let svg;
 
 function init() {
-  console.log('init');
   svg = document.getElementById('svgBoard');
   svg.addEventListener('mousedown', pressOn, false);
   svg.addEventListener('touchstart', pressOn, false);
@@ -180,6 +179,7 @@ function clickEvent(e) {
   for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
     for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
       let f = false;
+      /*
       for (let dy = 0; dy <= 1 - cy % 2; ++dy) {
         for (let dx = 0; dx <= 1 - cx % 2; ++dx) {
           if (blocks[Math.floor(cy / 2) - dy][Math.floor(cx / 2) - dx] == state_a) {
@@ -189,6 +189,8 @@ function clickEvent(e) {
         }
       }
       if (!f) continue;
+      */
+      f = true;
 
       for (let y = 0; y < blockNumY; ++y) {
         for (let x = 0; x < blockNumX; ++x) {
@@ -246,6 +248,10 @@ function clickEvent(e) {
           for (let i = 0; i < 4; i++) {
             let xx = xy[0] + dx[i];
             let yy = xy[1] + dy[i];
+            if (xx < 0) continue;
+            if (yy < 0) continue;
+            if (xx >= blockNumX) continue;
+            if (yy >= blockNumY) continue;
             if (b[yy][xx] == state_b) {
               b[yy][xx] = 0;
               st.push([xx, yy]);
