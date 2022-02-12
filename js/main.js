@@ -177,19 +177,77 @@ function clickEvent(e) {
   blocks[y][x] = state;
 
   points = [];
-  for (let py = centerNumY * 2; py <= centerNumY * 4; ++py) {
-    for (let px = centerNumX * 2; px <= centerNumX * 4; ++px) {
+  for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
+    for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
       let f = false;
-      for (let dy = 0; dy <= 1 - py % 2; ++dy) {
-        for (let dx = 0; dx <= 1 - px % 2; ++dx) {
-          if (blocks[Math.floor(py / 2) - dy][Math.floor(px / 2) - dx]) {
+      for (let dy = 0; dy <= 1 - cy % 2; ++dy) {
+        for (let dx = 0; dx <= 1 - cx % 2; ++dx) {
+          if (blocks[Math.floor(cy / 2) - dy][Math.floor(cx / 2) - dx] == state_a) {
             f = true;
             break;
           }
         }
       }
       if (!f) continue;
-      points.push([py, px]);
+
+      for (let y = 0; y < blockNumY; ++y) {
+        for (let x = 0; x < blockNumX; ++x) {
+          if (blocks[y][x] == state_b) {
+            blocks[y][x] = state_none;
+          }
+        }
+      }
+      let count_b = 0;
+      for (let y = 0; y < blockNumY; ++y) {
+        for (let x = 0; x < blockNumX; ++x) {
+          if (blocks[y][x] == state_a) {
+            const ax = 2 * x + 1;
+            const ay = 2 * y + 1;
+            const bx = (2 * cx - ax - 1) / 2;
+            const by = (2 * cy - ay - 1) / 2;
+            if (blocks[by][bx] == state_none) {
+              count_b++;
+              blocks[by][bx] = state_b;
+            }
+          }
+        }
+      }
+      if (count_b == 0) continue;
+
+      // Is b symmetry?
+      {
+        let minX = blockNumX;
+        let maxX = 0;
+        let minY = blockNumY;
+        let maxY = 0;
+        for (let y = 0; y < blockNumY; ++y) {
+          for (let x = 0; x < blockNumX; ++x) {
+            if (blocks[y][x] == state_b) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (x > maxY) maxY = y;
+            }
+          }
+        }
+        for (let y = 0; y < blockNumY; ++y) {
+          for (let x = 0; x < blockNumX; ++x) {
+            if (blocks[y][x] == state_b) {
+              if (blocks[maxY - (y - minY)][maxX - (x - minX)] != state_b) {
+                f = false;
+                x = blockNumX;
+                y = blockNumY;
+              }
+            }
+          }
+        }
+      }
+
+      if (f) {
+        points.push([cy, cx]);
+        cy = centerNumY * 4 + 1;
+        cx = centerNumX * 4 + 1;
+      }
     }
   }
 
