@@ -16,12 +16,12 @@ let blocks = [];
 let points = [];
 let svg;
 
-function init() {
+function init(e) {
   svg = document.getElementById('svgBoard');
   svg.addEventListener('mousedown', pressOn, false);
   svg.addEventListener('touchstart', pressOn, false);
-  svg.addEventListener('mousemove', clickEvent, false);
-  svg.addEventListener('touchmove', clickEvent, false);
+  svg.addEventListener('mousemove', cursorMoved, false);
+  svg.addEventListener('touchmove', cursorMoved, false);
   svg.addEventListener('mouseup', pressOff, false);
   svg.addEventListener('touchend', pressOff, false);
 
@@ -31,14 +31,41 @@ function init() {
       blocks[y][x] = 0;
     }
   }
-  draw();
+  draw(e);
 }
 
-function draw() {
+function draw(e) {
   while (svg.firstChild) {
     svg.removeChild(svg.firstChild);
   }
   let g = document.createElementNS(SVG_NS, 'g');
+
+  removeB();
+  let selectedX;
+  let selectedY;
+  if (points.length != 0) {
+    let bcRect = svg.getBoundingClientRect();
+    let cursorX;
+    let cursorY;
+    if (typeof e.touches !== 'undefined') {
+      cursorX = e.touches[0].clientX - bcRect.left;
+      cursorY = e.touches[0].clientY - bcRect.top;
+    } else {
+      cursorX = e.clientX - bcRect.left;
+      cursorY = e.clientY - bcRect.top;
+    }
+
+    let minDist = Infinity;
+    for (const point of points) {
+      let dist = (cursorX - point.x * blockSize / 2.0) ** 2 + (cursorY - point.y * blockSize / 2.0) ** 2;
+      if (dist < minDist) {
+        minDist = dist;
+        selectedX = point.x;
+        selectedY = point.y;
+      }
+    }
+    isSymmetrySub(selectedX, selectedY);
+  }
 
   for (let y = 0; y < blockNumY; ++y) {
     for (let x = 0; x < blockNumX; ++x) {
@@ -98,10 +125,11 @@ function draw() {
 
   for (const point of points) {
     let circle = document.createElementNS(SVG_NS, 'circle');
-    circle.setAttribute('cy', blockSize * point[0] / 2.0);
-    circle.setAttribute('cx', blockSize * point[1] / 2.0);
-    circle.setAttribute('r', 2.0);
-    circle.setAttribute('fill', 'red');
+    const isSelected = point.y == selectedY && point.x == selectedX;
+    circle.setAttribute('cy', blockSize * point.y / 2.0);
+    circle.setAttribute('cx', blockSize * point.x / 2.0);
+    circle.setAttribute('r', isSelected ? 3.0 : 2.0);
+    circle.setAttribute('fill', isSelected ? 'black' : 'red');
     g.appendChild(circle);
   }
   svg.appendChild(g);
@@ -149,7 +177,7 @@ function pressOn(e) {
   pressFlag = true;
   prevX = -1;
   prevY = -1;
-  clickEvent(e);
+  cursorMoved(e);
 }
 
 function preventDefault(e) {
@@ -161,7 +189,7 @@ function pressOff(e) {
   pressFlag = false;
 }
 
-function isSymmetry_sub(cx, cy) {
+function removeB() {
   for (let y = 0; y < blockNumY; ++y) {
     for (let x = 0; x < blockNumX; ++x) {
       if (blocks[y][x] == state_b) {
@@ -169,6 +197,10 @@ function isSymmetry_sub(cx, cy) {
       }
     }
   }
+}
+
+function isSymmetrySub(cx, cy) {
+  removeB();
   let count_b = 0;
   for (let y = 0; y < blockNumY; ++y) {
     for (let x = 0; x < blockNumX; ++x) {
@@ -309,8 +341,11 @@ function isSymmetry_sub(cx, cy) {
   return true;
 }
 
-function clickEvent(e) {
-  if (!pressFlag) return;
+function cursorMoved(e) {
+  if (!pressFlag) {
+    draw(e);
+    return;
+  }
 
   calcXY(e);
   if (x < centerNumX) return;
@@ -326,23 +361,13 @@ function clickEvent(e) {
   points = [];
   for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
     for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
-      if (isSymmetry_sub(cx, cy)) {
-        points.push([cy, cx]);
-        cy = centerNumY * 4 + 1;
-        cx = centerNumX * 4 + 1;
-      } else {
-        for (let y = 0; y < blockNumY; ++y) {
-          for (let x = 0; x < blockNumX; ++x) {
-            if (blocks[y][x] == state_b) {
-              blocks[y][x] = state_none;
-            }
-          }
-        }
+      if (isSymmetrySub(cx, cy)) {
+        points.push({y: cy, x: cx});
       }
     }
   }
 
-  draw();
+  draw(e);
 }
 
 // {{{ Stack
