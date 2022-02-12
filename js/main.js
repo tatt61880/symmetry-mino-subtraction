@@ -6,7 +6,7 @@ const centerNumX = 5;
 const centerNumY = 7;
 const blockNumX = centerNumX * 3;
 const blockNumY = centerNumY * 3;
-const blockSize = 30;
+const blockSize = 25;
 
 const state_none = 0;
 const state_a = 1;
@@ -178,19 +178,7 @@ function clickEvent(e) {
   points = [];
   for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
     for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
-      let f = false;
-      /*
-      for (let dy = 0; dy <= 1 - cy % 2; ++dy) {
-        for (let dx = 0; dx <= 1 - cx % 2; ++dx) {
-          if (blocks[Math.floor(cy / 2) - dy][Math.floor(cx / 2) - dx] == state_a) {
-            f = true;
-            break;
-          }
-        }
-      }
-      if (!f) continue;
-      */
-      f = true;
+      let f = true;
 
       for (let y = 0; y < blockNumY; ++y) {
         for (let x = 0; x < blockNumX; ++x) {
@@ -238,7 +226,7 @@ function clickEvent(e) {
             }
           }
         }
-      
+
         let st = new Stack();
         st.push([x0, y0]);
         b[y0][x0] = 0;
@@ -284,7 +272,7 @@ function clickEvent(e) {
             }
           }
         }
-      
+
         let st = new Stack();
         st.push([x0, y0]);
         b[y0][x0] = 0;
