@@ -214,8 +214,50 @@ function clickEvent(e) {
       }
       if (count_b == 0) continue;
 
-      // Is b symmetry?
+      // Is b connected?
       {
+        let b = [];
+        for (let y = 0; y < blockNumY; ++y) {
+          b[y] = [];
+          for (let x = 0; x < blockNumX; ++x) {
+            b[y][x] = blocks[y][x];
+          }
+        }
+        let x0;
+        let y0;
+        for (let y = 0; y < blockNumY; ++y) {
+          for (let x = 0; x < blockNumX; ++x) {
+            if (b[y][x] == state_b) {
+              x0 = x;
+              y0 = y;
+              break;
+            }
+          }
+        }
+      
+        let st = new Stack();
+        st.push([x0, y0]);
+        let cnt = 0;
+        while (!st.empty()) {
+          cnt++;
+          let xy = st.pop();
+          const dy = [1, 0, -1, 0];
+          const dx = [0, 1, 0, -1];
+          for (let i = 0; i < 4; i++) {
+            let xx = xy[0] + dx[i];
+            let yy = xy[1] + dy[i];
+            if (b[yy][xx] == state_b) {
+              b[yy][xx] = 0;
+              st.push([xx, yy]);
+            }
+          }
+        }
+        if (cnt != count_b) f = false;
+      }
+
+      // Is b symmetry?
+      if (f) {
+        console.log('a');
         let minX = blockNumX;
         let maxX = 0;
         let minY = blockNumY;
@@ -247,9 +289,39 @@ function clickEvent(e) {
         points.push([cy, cx]);
         cy = centerNumY * 4 + 1;
         cx = centerNumX * 4 + 1;
+      } else {
+        for (let y = 0; y < blockNumY; ++y) {
+          for (let x = 0; x < blockNumX; ++x) {
+            if (blocks[y][x] == state_b) {
+              blocks[y][x] = state_none;
+            }
+          }
+        }
       }
     }
   }
 
   draw();
 }
+
+// {{{ Stack
+function Stack() {
+  this.data = [];
+}
+Stack.prototype.push = function(val) {
+  this.data.push(val);
+  return val;
+};
+Stack.prototype.pop = function() {
+  return this.data.pop();
+};
+Stack.prototype.top = function() {
+  return this.data[this.data.length - 1];
+};
+Stack.prototype.size = function() {
+  return this.data.length;
+};
+Stack.prototype.empty = function() {
+  return this.data.length == 0;
+};
+// }}}
