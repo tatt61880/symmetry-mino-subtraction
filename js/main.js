@@ -2,8 +2,8 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-const centerNumX = 4;
-const centerNumY = 7;
+const centerNumX = 3;
+const centerNumY = 4;
 const blockNumX = centerNumX * 3;
 const blockNumY = centerNumY * 3;
 const blockSize = 30;
@@ -217,7 +217,7 @@ function clickEvent(e) {
       if (count_b == 0) continue;
 
       // Is b connected?
-      {
+      if (count_b != 1) {
         let b = [];
         for (let y = 0; y < blockNumY; ++y) {
           b[y] = [];
@@ -239,6 +239,7 @@ function clickEvent(e) {
       
         let st = new Stack();
         st.push([x0, y0]);
+        b[y0][x0] = 0;
         let cnt = 0;
         while (!st.empty()) {
           cnt++;
@@ -258,6 +259,7 @@ function clickEvent(e) {
             }
           }
         }
+        if (cx == 9 && cy == 10) console.log(`${cnt}`);
         if (cnt != count_b) f = false;
       }
 
