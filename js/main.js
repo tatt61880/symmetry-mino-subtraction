@@ -2,8 +2,8 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-const centerNumX = 4;
-const centerNumY = 4;
+const centerNumX = 5;
+const centerNumY = 7;
 const blockNumX = centerNumX * 3;
 const blockNumY = centerNumY * 3;
 const blockSize = 30;
@@ -216,8 +216,56 @@ function clickEvent(e) {
       }
       if (count_b == 0) continue;
 
-      // Is b connected?
+      // Is a and b connected?
       {
+        let count = 0;
+        let b = [];
+        for (let y = 0; y < blockNumY; ++y) {
+          b[y] = [];
+          for (let x = 0; x < blockNumX; ++x) {
+            b[y][x] = blocks[y][x];
+            if (b[y][x]) count++;
+          }
+        }
+        let x0;
+        let y0;
+        for (let y = 0; y < blockNumY; ++y) {
+          for (let x = 0; x < blockNumX; ++x) {
+            if (b[y][x]) {
+              x0 = x;
+              y0 = y;
+              break;
+            }
+          }
+        }
+      
+        let st = new Stack();
+        st.push([x0, y0]);
+        b[y0][x0] = 0;
+        let cnt = 0;
+        while (!st.empty()) {
+          cnt++;
+          let xy = st.pop();
+          const dy = [1, 0, -1, 0];
+          const dx = [0, 1, 0, -1];
+          for (let i = 0; i < 4; i++) {
+            let xx = xy[0] + dx[i];
+            let yy = xy[1] + dy[i];
+            if (xx < 0) continue;
+            if (yy < 0) continue;
+            if (xx >= blockNumX) continue;
+            if (yy >= blockNumY) continue;
+            if (b[yy][xx]) {
+              b[yy][xx] = 0;
+              st.push([xx, yy]);
+            }
+          }
+        }
+        if (cnt != count) f = false;
+      }
+
+      // Is b connected?
+      if (f) {
         let b = [];
         for (let y = 0; y < blockNumY; ++y) {
           b[y] = [];
