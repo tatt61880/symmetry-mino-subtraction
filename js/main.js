@@ -2,8 +2,8 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-const centerNumX = 4;
-const centerNumY = 6;
+const centerNumX = 3;
+const centerNumY = 4;
 const blockNumX = centerNumX * 3;
 const blockNumY = centerNumY * 3;
 const blockSize = 30;
@@ -13,6 +13,7 @@ const state_a = 1;
 const state_b = 2;
 
 let blocks = [];
+let points = [];
 let svg;
 
 function init() {
@@ -48,7 +49,7 @@ function draw() {
         rect.setAttribute('y', blockSize * y);
         rect.setAttribute('width', blockSize);
         rect.setAttribute('height', blockSize);
-        rect.setAttribute('fill', 'pink');
+        rect.setAttribute('fill', blocks[y][x] == state_a ? 'pink' : 'aqua');
         rect.setAttribute('stroke', 'none');
         g.appendChild(rect);
       }
@@ -94,6 +95,15 @@ function draw() {
     line.setAttribute('stroke', 'black');
     line.setAttribute('stroke-dasharray', '2, 2');
     g.appendChild(line);
+  }
+
+  for (const point of points) {
+    let circle = document.createElementNS(SVG_NS, 'circle');
+    circle.setAttribute('cy', blockSize * point[0] / 2.0);
+    circle.setAttribute('cx', blockSize * point[1] / 2.0);
+    circle.setAttribute('r', 2.0);
+    circle.setAttribute('fill', 'red');
+    g.appendChild(circle);
   }
   svg.appendChild(g);
 }
@@ -165,5 +175,23 @@ function clickEvent(e) {
   prevX = x;
   prevY = y;
   blocks[y][x] = state;
+
+  points = [];
+  for (let py = centerNumY * 2; py <= centerNumY * 4; ++py) {
+    for (let px = centerNumX * 2; px <= centerNumX * 4; ++px) {
+      let f = false;
+      for (let dy = 0; dy <= 1 - py % 2; ++dy) {
+        for (let dx = 0; dx <= 1 - px % 2; ++dx) {
+          if (blocks[Math.floor(py / 2) - dy][Math.floor(px / 2) - dx]) {
+            f = true;
+            break;
+          }
+        }
+      }
+      if (!f) continue;
+      points.push([py, px]);
+    }
+  }
+
   draw();
 }
