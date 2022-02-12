@@ -141,7 +141,7 @@ function pressOn(e) {
   if (y < centerNumY) return;
   if (2 * centerNumY <= y) return;
 
-  if (blocks[y][x]) {
+  if (blocks[y][x] == state_a) {
     state = state_none;
   } else {
     state = state_a;
