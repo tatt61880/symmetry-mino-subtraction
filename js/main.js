@@ -2,8 +2,8 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-const centerNumX = 3;
-const centerNumY = 4;
+const centerNumX = 4;
+const centerNumY = 7;
 const blockNumX = centerNumX * 3;
 const blockNumY = centerNumY * 3;
 const blockSize = 30;
@@ -263,7 +263,6 @@ function clickEvent(e) {
 
       // Is b symmetry?
       if (f) {
-        console.log('a');
         let minX = blockNumX;
         let maxX = 0;
         let minY = blockNumY;
