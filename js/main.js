@@ -2,7 +2,7 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-const centerNumX = 3;
+const centerNumX = 4;
 const centerNumY = 4;
 const blockNumX = centerNumX * 3;
 const blockNumY = centerNumY * 3;
@@ -274,7 +274,7 @@ function clickEvent(e) {
               if (x < minX) minX = x;
               if (x > maxX) maxX = x;
               if (y < minY) minY = y;
-              if (x > maxY) maxY = y;
+              if (y > maxY) maxY = y;
             }
           }
         }
