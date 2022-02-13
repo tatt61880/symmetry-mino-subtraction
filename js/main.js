@@ -8,9 +8,9 @@ const blockNumX = centerNumX * 3;
 const blockNumY = centerNumY * 3;
 const blockSize = 25;
 
-const state_none = 0;
-const state_a = 1;
-const state_b = 2;
+const stateNone = 0;
+const stateA = 1;
+const stateB = 2;
 
 let blocks = [];
 let points = [];
@@ -75,7 +75,7 @@ function draw(e) {
         rect.setAttribute('y', blockSize * y);
         rect.setAttribute('width', blockSize);
         rect.setAttribute('height', blockSize);
-        rect.setAttribute('fill', blocks[y][x] == state_a ? 'pink' : 'aqua');
+        rect.setAttribute('fill', blocks[y][x] == stateA ? 'pink' : 'aqua');
         rect.setAttribute('stroke', 'none');
         g.appendChild(rect);
       }
@@ -168,10 +168,10 @@ function pressOn(e) {
   if (y < centerNumY) return;
   if (2 * centerNumY <= y) return;
 
-  if (blocks[y][x] == state_a) {
-    state = state_none;
+  if (blocks[y][x] == stateA) {
+    state = stateNone;
   } else {
-    state = state_a;
+    state = stateA;
   }
 
   pressFlag = true;
@@ -192,8 +192,8 @@ function pressOff(e) {
 function removeB() {
   for (let y = 0; y < blockNumY; ++y) {
     for (let x = 0; x < blockNumX; ++x) {
-      if (blocks[y][x] == state_b) {
-        blocks[y][x] = state_none;
+      if (blocks[y][x] == stateB) {
+        blocks[y][x] = stateNone;
       }
     }
   }
@@ -201,22 +201,22 @@ function removeB() {
 
 function isSymmetrySub(cx, cy) {
   removeB();
-  let count_b = 0;
+  let countB = 0;
   for (let y = 0; y < blockNumY; ++y) {
     for (let x = 0; x < blockNumX; ++x) {
-      if (blocks[y][x] == state_a) {
+      if (blocks[y][x] == stateA) {
         const ax = 2 * x + 1;
         const ay = 2 * y + 1;
         const bx = (2 * cx - ax - 1) / 2;
         const by = (2 * cy - ay - 1) / 2;
-        if (blocks[by][bx] == state_none) {
-          count_b++;
-          blocks[by][bx] = state_b;
+        if (blocks[by][bx] == stateNone) {
+          countB++;
+          blocks[by][bx] = stateB;
         }
       }
     }
   }
-  if (count_b == 0) return false;
+  if (countB == 0) return false;
 
   // Is a and b connected?
   {
@@ -279,7 +279,7 @@ function isSymmetrySub(cx, cy) {
     let y0;
     for (let y = 0; y < blockNumY; ++y) {
       for (let x = 0; x < blockNumX; ++x) {
-        if (b[y][x] == state_b) {
+        if (b[y][x] == stateB) {
           x0 = x;
           y0 = y;
           break;
@@ -303,13 +303,13 @@ function isSymmetrySub(cx, cy) {
         if (yy < 0) continue;
         if (xx >= blockNumX) continue;
         if (yy >= blockNumY) continue;
-        if (b[yy][xx] == state_b) {
+        if (b[yy][xx] == stateB) {
           b[yy][xx] = 0;
           st.push([xx, yy]);
         }
       }
     }
-    if (cnt != count_b) return false;
+    if (cnt != countB) return false;
   }
 
   // Is b symmetry?
@@ -320,7 +320,7 @@ function isSymmetrySub(cx, cy) {
     let maxY = 0;
     for (let y = 0; y < blockNumY; ++y) {
       for (let x = 0; x < blockNumX; ++x) {
-        if (blocks[y][x] == state_b) {
+        if (blocks[y][x] == stateB) {
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
           if (y < minY) minY = y;
@@ -330,8 +330,8 @@ function isSymmetrySub(cx, cy) {
     }
     for (let y = 0; y < blockNumY; ++y) {
       for (let x = 0; x < blockNumX; ++x) {
-        if (blocks[y][x] == state_b) {
-          if (blocks[maxY - (y - minY)][maxX - (x - minX)] != state_b) {
+        if (blocks[y][x] == stateB) {
+          if (blocks[maxY - (y - minY)][maxX - (x - minX)] != stateB) {
             return false;
           }
         }
