@@ -2,10 +2,11 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-const centerNumX = 5;
-const centerNumY = 7;
-const blockNumX = centerNumX * 3;
-const blockNumY = centerNumY * 3;
+let centerNumX = 5;
+let centerNumY = 7;
+let blockNumX;
+let blockNumY;
+let blockInitStr = '';
 const blockSize = 25;
 
 const stateNone = 0;
@@ -16,7 +17,33 @@ let blocks = [];
 let points = [];
 let svg;
 
-function init(e) {
+function analyzeUrl() {
+  let paravalsStr = location.href.split('?')[1];
+  if (paravalsStr == null) paravalsStr = '';
+  analyzeParavals(paravalsStr);
+}
+
+function analyzeParavals(paravalsStr) {
+  let paravalsArray = paravalsStr.split('&');
+  if (!paravalsArray.length) return;
+
+  for (let i = 0; i < paravalsArray.length; ++i) {
+    let paraval = paravalsArray[i].split('=');
+    if (paraval.length == 2) {
+      if (paraval[0] == 'w') {
+        centerNumX = clamp(Number(paraval[1]), 3, 10);
+      } else if (paraval[0] == 'h') {
+        centerNumY = clamp(Number(paraval[1]), 3, 10);
+      } else if (paraval[0] == 's') {
+        blockInitStr = paraval[1];
+      } else {
+        continue;
+      }
+    }
+  }
+}
+
+function initSvg() {
   svg = document.getElementById('svgBoard');
   svg.addEventListener('mousedown', pressOn, false);
   svg.addEventListener('touchstart', pressOn, false);
@@ -24,14 +51,33 @@ function init(e) {
   svg.addEventListener('touchmove', cursorMoved, false);
   svg.addEventListener('mouseup', pressOff, false);
   svg.addEventListener('touchend', pressOff, false);
+}
 
+function init(e) {
+  analyzeUrl();
+  blockNumX = centerNumX * 3;
+  blockNumY = centerNumY * 3;
   for (let y = 0; y < blockNumY; ++y) {
     blocks[y] = [];
     for (let x = 0; x < blockNumX; ++x) {
       blocks[y][x] = 0;
     }
   }
-  draw(e);
+  {
+    let y = centerNumY;
+    let x = centerNumX;
+    for (const c of blockInitStr) {
+      if (c == '-') {
+        y++;
+        x = centerNumX;
+      } else {
+        blocks[y][x] = parseInt(c);
+        x++;
+      }
+    }
+  }
+  initSvg();
+  update(e);
 }
 
 function draw(e) {
@@ -55,10 +101,10 @@ function draw(e) {
       cursorY = e.clientY - bcRect.top;
     }
 
-    let minDist = Infinity;
+    let minDist = -1;
     for (const point of points) {
       let dist = (cursorX - point.x * blockSize / 2.0) ** 2 + (cursorY - point.y * blockSize / 2.0) ** 2;
-      if (dist < minDist) {
+      if (minDist == -1 || dist < minDist) {
         minDist = dist;
         selectedX = point.x;
         selectedY = point.y;
@@ -341,6 +387,18 @@ function isSymmetrySub(cx, cy) {
   return true;
 }
 
+function update(e) {
+  points = [];
+  for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
+    for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
+      if (isSymmetrySub(cx, cy)) {
+        points.push({y: cy, x: cx});
+      }
+    }
+  }
+  draw(e);
+}
+
 function cursorMoved(e) {
   if (!pressFlag) {
     draw(e);
@@ -358,16 +416,7 @@ function cursorMoved(e) {
   prevY = y;
   blocks[y][x] = state;
 
-  points = [];
-  for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
-    for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
-      if (isSymmetrySub(cx, cy)) {
-        points.push({y: cy, x: cx});
-      }
-    }
-  }
-
-  draw(e);
+  update(e);
 }
 
 // {{{ Stack
