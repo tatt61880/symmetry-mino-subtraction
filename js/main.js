@@ -388,10 +388,10 @@ function isSymmetrySub(cx, cy) {
   symmetrySub(cx, cy);
   if (countB() == 0) return false;
 
-  for (let minY = 0; minY < blockNumY - 1; ++minY) {
-    for (let maxY = minY; maxY < blockNumY; ++maxY) {
-      for (let minX = 0; minX < blockNumX - 1; ++minX) {
-        for (let maxX = minX; maxX < blockNumX; ++maxX) {
+  for (let minY = 0; minY < 2 * centerNumY; ++minY) {
+    for (let maxY = Math.max(minY, centerNumY); maxY < blockNumY; ++maxY) {
+      for (let minX = 0; minX < 2 * centerNumX; ++minX) {
+        for (let maxX = Math.max(minY, centerNumX); maxX < blockNumX; ++maxX) {
           removeB();
           if (!symmetrySub(cx, cy)) continue;
           if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
