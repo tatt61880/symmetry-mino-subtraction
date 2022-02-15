@@ -248,8 +248,9 @@ function removeB() {
 function isSymmetrySub(cx, cy) {
   removeB();
   let countB = 0;
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  // 図形Aを点Cに点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
+  for (let y = centerNumY; y < 2 * centerNumY; ++y) {
+    for (let x = centerNumX; x < 2 * centerNumX; ++x) {
       if (blocks[y][x] == stateA) {
         const ax = 2 * x + 1;
         const ay = 2 * y + 1;
