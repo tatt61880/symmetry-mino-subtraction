@@ -257,6 +257,31 @@ function isB(x)
   return x == stateB;
 }
 
+function isSymmetry(f) {
+  let minX = blockNumX;
+  let maxX = 0;
+  let minY = blockNumY;
+  let maxY = 0;
+  for (let y = 0; y < blockNumY; ++y) {
+    for (let x = 0; x < blockNumX; ++x) {
+      if (f(blocks[y][x])) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  for (let y = 0; y < blockNumY; ++y) {
+    for (let x = 0; x < blockNumX; ++x) {
+      if (f(blocks[y][x]) && !f(blocks[maxY - (y - minY)][maxX - (x - minX)])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 function isConnected(f) {
   let count = 0;
   let b = [];
@@ -304,25 +329,39 @@ function isConnected(f) {
   return cnt == count;
 }
 
-function isSymmetrySub(cx, cy) {
-  removeB();
-  let countB = 0;
-  // 図形Aを点Cに点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
+// 図形(AUB)を点Cに点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
+function isSymmetrySubSub(cx, cy) {
   for (let y = centerNumY; y < 2 * centerNumY; ++y) {
     for (let x = centerNumX; x < 2 * centerNumX; ++x) {
-      if (blocks[y][x] == stateA) {
+      if (blocks[y][x] != stateNone) {
         const ax = 2 * x + 1;
         const ay = 2 * y + 1;
         const bx = (2 * cx - ax - 1) / 2;
         const by = (2 * cy - ay - 1) / 2;
         if (blocks[by][bx] == stateNone) {
-          countB++;
           blocks[by][bx] = stateB;
         }
       }
     }
   }
-  if (countB == 0) return false;
+}
+
+function countB() {
+  let count = 0;
+  for (let y = 0; y < blockNumY; ++y) {
+    for (let x = 0; x < blockNumX; ++x) {
+      if (blocks[y][x] == stateB) count++;
+    }
+  }
+  return count;
+}
+
+function isSymmetrySub(cx, cy) {
+  removeB();
+
+  isSymmetrySubSub(cx, cy);
+
+  if (countB() == 0) return false;
 
   // Is A and B connected?
   if (!isConnected(isAorB)) return false;
@@ -331,31 +370,8 @@ function isSymmetrySub(cx, cy) {
   if (!isConnected(isB)) return false;
 
   // Is B symmetry?
-  {
-    let minX = blockNumX;
-    let maxX = 0;
-    let minY = blockNumY;
-    let maxY = 0;
-    for (let y = 0; y < blockNumY; ++y) {
-      for (let x = 0; x < blockNumX; ++x) {
-        if (blocks[y][x] == stateB) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-    }
-    for (let y = 0; y < blockNumY; ++y) {
-      for (let x = 0; x < blockNumX; ++x) {
-        if (blocks[y][x] == stateB) {
-          if (blocks[maxY - (y - minY)][maxX - (x - minX)] != stateB) {
-            return false;
-          }
-        }
-      }
-    }
-  }
+  if (!isSymmetry(isB)) return false;
+
   return true;
 }
 
