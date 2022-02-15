@@ -245,6 +245,65 @@ function removeB() {
   }
 }
 
+function isAorB(x)
+{
+  if (x == stateA) return true;
+  if (x == stateB) return true;
+  return false;
+}
+
+function isB(x)
+{
+  return x == stateB;
+}
+
+function isConnected(f) {
+  let count = 0;
+  let b = [];
+  for (let y = 0; y < blockNumY; ++y) {
+    b[y] = [];
+    for (let x = 0; x < blockNumX; ++x) {
+      b[y][x] = blocks[y][x];
+      if (f(b[y][x])) count++;
+    }
+  }
+  let x0;
+  let y0;
+  for (let y = 0; y < blockNumY; ++y) {
+    for (let x = 0; x < blockNumX; ++x) {
+      if (f(b[y][x])) {
+        x0 = x;
+        y0 = y;
+        break;
+      }
+    }
+  }
+
+  let st = new Stack();
+  st.push([x0, y0]);
+  b[y0][x0] = 0;
+  let cnt = 0;
+  while (!st.empty()) {
+    cnt++;
+    let xy = st.pop();
+    const dy = [1, 0, -1, 0];
+    const dx = [0, 1, 0, -1];
+    for (let i = 0; i < 4; i++) {
+      let xx = xy[0] + dx[i];
+      let yy = xy[1] + dy[i];
+      if (xx < 0) continue;
+      if (yy < 0) continue;
+      if (xx >= blockNumX) continue;
+      if (yy >= blockNumY) continue;
+      if (f(b[yy][xx])) {
+        b[yy][xx] = 0;
+        st.push([xx, yy]);
+      }
+    }
+  }
+  return cnt == count;
+}
+
 function isSymmetrySub(cx, cy) {
   removeB();
   let countB = 0;
@@ -265,101 +324,13 @@ function isSymmetrySub(cx, cy) {
   }
   if (countB == 0) return false;
 
-  // Is a and b connected?
-  {
-    let count = 0;
-    let b = [];
-    for (let y = 0; y < blockNumY; ++y) {
-      b[y] = [];
-      for (let x = 0; x < blockNumX; ++x) {
-        b[y][x] = blocks[y][x];
-        if (b[y][x]) count++;
-      }
-    }
-    let x0;
-    let y0;
-    for (let y = 0; y < blockNumY; ++y) {
-      for (let x = 0; x < blockNumX; ++x) {
-        if (b[y][x]) {
-          x0 = x;
-          y0 = y;
-          break;
-        }
-      }
-    }
+  // Is A and B connected?
+  if (!isConnected(isAorB)) return false;
 
-    let st = new Stack();
-    st.push([x0, y0]);
-    b[y0][x0] = 0;
-    let cnt = 0;
-    while (!st.empty()) {
-      cnt++;
-      let xy = st.pop();
-      const dy = [1, 0, -1, 0];
-      const dx = [0, 1, 0, -1];
-      for (let i = 0; i < 4; i++) {
-        let xx = xy[0] + dx[i];
-        let yy = xy[1] + dy[i];
-        if (xx < 0) continue;
-        if (yy < 0) continue;
-        if (xx >= blockNumX) continue;
-        if (yy >= blockNumY) continue;
-        if (b[yy][xx]) {
-          b[yy][xx] = 0;
-          st.push([xx, yy]);
-        }
-      }
-    }
-    if (cnt != count) return false;
-  }
+  // Is B connected?
+  if (!isConnected(isB)) return false;
 
-  // Is b connected?
-  {
-    let b = [];
-    for (let y = 0; y < blockNumY; ++y) {
-      b[y] = [];
-      for (let x = 0; x < blockNumX; ++x) {
-        b[y][x] = blocks[y][x];
-      }
-    }
-    let x0;
-    let y0;
-    for (let y = 0; y < blockNumY; ++y) {
-      for (let x = 0; x < blockNumX; ++x) {
-        if (b[y][x] == stateB) {
-          x0 = x;
-          y0 = y;
-          break;
-        }
-      }
-    }
-
-    let st = new Stack();
-    st.push([x0, y0]);
-    b[y0][x0] = 0;
-    let cnt = 0;
-    while (!st.empty()) {
-      cnt++;
-      let xy = st.pop();
-      const dy = [1, 0, -1, 0];
-      const dx = [0, 1, 0, -1];
-      for (let i = 0; i < 4; i++) {
-        let xx = xy[0] + dx[i];
-        let yy = xy[1] + dy[i];
-        if (xx < 0) continue;
-        if (yy < 0) continue;
-        if (xx >= blockNumX) continue;
-        if (yy >= blockNumY) continue;
-        if (b[yy][xx] == stateB) {
-          b[yy][xx] = 0;
-          st.push([xx, yy]);
-        }
-      }
-    }
-    if (cnt != countB) return false;
-  }
-
-  // Is b symmetry?
+  // Is B symmetry?
   {
     let minX = blockNumX;
     let maxX = 0;
