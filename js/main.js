@@ -338,6 +338,10 @@ function symmetrySub(cx, cy) {
         const ay = 2 * y + 1;
         const bx = (2 * cx - ax - 1) / 2;
         const by = (2 * cy - ay - 1) / 2;
+        if (bx < 0) continue;
+        if (by < 0) continue;
+        if (bx >= blockNumX) continue;
+        if (by >= blockNumY) continue;
         if (blocks[by][bx] == stateNone) {
           blocks[by][bx] = stateB;
         }
@@ -379,6 +383,8 @@ function isSymmetrySub(cx, cy) {
       for (let minX = 0; minX < blockNumX - 1; ++minX) {
         for (let maxX = minX; maxX < blockNumX; ++maxX) {
           removeB();
+          symmetrySub(cx, cy);
+          symmetrySub2(minX, maxX, minY, maxY);
           symmetrySub(cx, cy);
           symmetrySub2(minX, maxX, minY, maxY);
 
