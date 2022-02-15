@@ -338,16 +338,19 @@ function symmetrySub(cx, cy) {
         const ay = 2 * y + 1;
         const bx = (2 * cx - ax - 1) / 2;
         const by = (2 * cy - ay - 1) / 2;
-        if (bx < 0) continue;
-        if (by < 0) continue;
-        if (bx >= blockNumX) continue;
-        if (by >= blockNumY) continue;
+        // 処理速度等の都合から、あらかじめ用意したエリア外にはみでる場合は不適切とします。
+        if (bx < 0) return false;
+        if (by < 0) return false;
+        if (bx >= blockNumX) return false;
+        if (by >= blockNumY) return false;
+
         if (blocks[by][bx] == stateNone) {
           blocks[by][bx] = stateB;
         }
       }
     }
   }
+  return true;
 }
 
 // 図形Bを((minX + maxX) / 2, (minY + maxY) / 2)で点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
@@ -355,12 +358,19 @@ function symmetrySub2(minX, maxX, minY, maxY) {
   for (let y = minY; y <= maxY; ++y) {
     for (let x = minX; x <= maxX; ++x) {
       if (blocks[maxY - (y - minY)][maxX - (x - minX)] == stateB) {
-        if (blocks[y][x] == stateNone) {
+        switch (blocks[y][x]) {
+        case stateNone:
           blocks[y][x] = stateB;
+          break;
+        case stateB:
+          break;
+        default:
+          return false;
         }
       }
     }
   }
+  return true;
 }
 
 function countB() {
@@ -383,10 +393,12 @@ function isSymmetrySub(cx, cy) {
       for (let minX = 0; minX < blockNumX - 1; ++minX) {
         for (let maxX = minX; maxX < blockNumX; ++maxX) {
           removeB();
-          symmetrySub(cx, cy);
-          symmetrySub2(minX, maxX, minY, maxY);
-          symmetrySub(cx, cy);
-          symmetrySub2(minX, maxX, minY, maxY);
+          if (!symmetrySub(cx, cy)) continue;
+          if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
+          if (!symmetrySub(cx, cy)) continue;
+          if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
+          if (!symmetrySub(cx, cy)) continue;
+          if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
 
           // Is A and B connected?
           if (!isConnected(isAorB)) continue;
