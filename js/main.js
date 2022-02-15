@@ -331,8 +331,8 @@ function isConnected(f) {
 
 // 図形(AUB)を点Cに点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
 function isSymmetrySubSub(cx, cy) {
-  for (let y = centerNumY; y < 2 * centerNumY; ++y) {
-    for (let x = centerNumX; x < 2 * centerNumX; ++x) {
+  for (let y = 0; y < blockNumY; ++y) {
+    for (let x = 0; x < blockNumX; ++x) {
       if (blocks[y][x] != stateNone) {
         const ax = 2 * x + 1;
         const ay = 2 * y + 1;
@@ -358,7 +358,6 @@ function countB() {
 
 function isSymmetrySub(cx, cy) {
   removeB();
-
   isSymmetrySubSub(cx, cy);
 
   if (countB() == 0) return false;
