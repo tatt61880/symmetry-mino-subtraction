@@ -252,6 +252,11 @@ function isAorB(x)
   return false;
 }
 
+function isA(x)
+{
+  return x == stateA;
+}
+
 function isB(x)
 {
   return x == stateB;
@@ -417,10 +422,12 @@ function isSymmetrySub(cx, cy) {
 
 function update(e) {
   points = [];
-  for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
-    for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
-      if (isSymmetrySub(cx, cy)) {
-        points.push({y: cy, x: cx});
+  if (isConnected(isA)) {
+    for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
+      for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
+        if (isSymmetrySub(cx, cy)) {
+          points.push({y: cy, x: cx});
+        }
       }
     }
   }
