@@ -288,13 +288,13 @@ function isSymmetry(f) {
 }
 
 function isConnected(f) {
-  let count = 0;
+  let countF = 0;
   let b = [];
   for (let y = 0; y < blockNumY; ++y) {
     b[y] = [];
     for (let x = 0; x < blockNumX; ++x) {
       b[y][x] = blocks[y][x];
-      if (f(b[y][x])) count++;
+      if (f(b[y][x])) countF++;
     }
   }
   let x0;
@@ -331,7 +331,7 @@ function isConnected(f) {
       }
     }
   }
-  return cnt == count;
+  return cnt == countF;
 }
 
 // 図形(AUB)を点Cに点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
@@ -378,25 +378,35 @@ function symmetrySub2(minX, maxX, minY, maxY) {
   return true;
 }
 
-function countB() {
-  let count = 0;
+function count(f) {
+  let cnt = 0;
   for (let y = 0; y < blockNumY; ++y) {
     for (let x = 0; x < blockNumX; ++x) {
-      if (blocks[y][x] == stateB) count++;
+      if (f(blocks[y][x])) cnt++;
     }
   }
-  return count;
+  return cnt;
 }
 
 function isSymmetrySub(cx, cy) {
   removeB();
   symmetrySub(cx, cy);
-  if (countB() == 0) return false;
+  if (count(isB) == 0) return false;
+  let maxMinY = blockNumY;
+  let minMaxY = 0;
+  for (let y = 0; y < blockNumY; ++y) {
+    for (let x = 0; x < blockNumX; ++x) {
+      if (blocks[y][x] == stateB) {
+        maxMinY = Math.min(maxMinY, y);
+        minMaxY = Math.max(minMaxY, y);
+      }
+    }
+  }
 
-  for (let minY = 0; minY < 2 * centerNumY; ++minY) {
-    for (let maxY = Math.max(minY, centerNumY); maxY < blockNumY; ++maxY) {
+  for (let minY = 0; minY < maxMinY; ++minY) {
+    for (let maxY = Math.max(minY, minMaxY); maxY < blockNumY; ++maxY) {
       for (let minX = 0; minX < 2 * centerNumX; ++minX) {
-        for (let maxX = Math.max(minY, centerNumX); maxX < blockNumX; ++maxX) {
+        for (let maxX = Math.max(minX, centerNumX); maxX < blockNumX; ++maxX) {
           removeB();
           if (!symmetrySub(cx, cy)) continue;
           if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
@@ -422,7 +432,7 @@ function isSymmetrySub(cx, cy) {
 
 function update(e) {
   points = [];
-  if (isConnected(isA)) {
+  if (count(isA) != 0 && isConnected(isA)) {
     for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
       for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
         if (isSymmetrySub(cx, cy)) {
