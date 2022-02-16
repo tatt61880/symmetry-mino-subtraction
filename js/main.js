@@ -2,8 +2,8 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-let centerNumX = 5;
-let centerNumY = 7;
+let centerNumX = 4;
+let centerNumY = 4;
 let blockNumX;
 let blockNumY;
 let blockInitStr = '';
@@ -394,19 +394,23 @@ function isSymmetrySub(cx, cy) {
   if (count(isB) == 0) return false;
   let maxMinY = blockNumY;
   let minMaxY = 0;
+  let maxMinX = blockNumX;
+  let minMaxX = 0;
   for (let y = 0; y < blockNumY; ++y) {
     for (let x = 0; x < blockNumX; ++x) {
       if (blocks[y][x] == stateB) {
         maxMinY = Math.min(maxMinY, y);
         minMaxY = Math.max(minMaxY, y);
+        maxMinX = Math.min(maxMinX, x);
+        minMaxX = Math.max(minMaxX, x);
       }
     }
   }
 
   for (let minY = 0; minY < maxMinY; ++minY) {
     for (let maxY = Math.max(minY, minMaxY); maxY < blockNumY; ++maxY) {
-      for (let minX = 0; minX < 2 * centerNumX; ++minX) {
-        for (let maxX = Math.max(minX, centerNumX); maxX < blockNumX; ++maxX) {
+      for (let minX = 0; minX < maxMinX; ++minX) {
+        for (let maxX = Math.max(minX, minMaxX); maxX < blockNumX; ++maxX) {
           removeB();
           if (!symmetrySub(cx, cy)) continue;
           if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
