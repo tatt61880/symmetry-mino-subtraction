@@ -1,3 +1,5 @@
+'use strict';
+
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -6,7 +8,7 @@ let centerNumX = 4;
 let centerNumY = 4;
 let blockNumX;
 let blockNumY;
-let blockInitStr = '';
+let initialBlockStr = '';
 const blockSize = 25;
 
 const stateNone = 0;
@@ -15,7 +17,9 @@ const stateB = 2;
 
 let blocks = [];
 let points = [];
-let svg;
+let elemSvg;
+let elemWidth;
+let elemHeight;
 
 function analyzeUrl() {
   let paravalsStr = location.href.split('?')[1];
@@ -35,7 +39,7 @@ function analyzeParavals(paravalsStr) {
       } else if (paraval[0] == 'h') {
         centerNumY = clamp(Number(paraval[1]), 3, 10);
       } else if (paraval[0] == 's') {
-        blockInitStr = paraval[1];
+        initialBlockStr = paraval[1];
       } else {
         continue;
       }
@@ -43,46 +47,83 @@ function analyzeParavals(paravalsStr) {
   }
 }
 
-function initSvg() {
-  svg = document.getElementById('svgBoard');
-  svg.addEventListener('mousedown', pressOn, false);
-  svg.addEventListener('touchstart', pressOn, false);
-  svg.addEventListener('mousemove', cursorMoved, false);
-  svg.addEventListener('touchmove', cursorMoved, false);
-  svg.addEventListener('mouseup', pressOff, false);
-  svg.addEventListener('touchend', pressOff, false);
+function getBlockStr()
+{
+  let res = '';
+  for (let y = 0; y < centerNumY; ++y) {
+    for (let x = 0; x < centerNumX; ++x) {
+      res += isA(blocks[centerNumY + y][centerNumX + x]) ? '1' : '0'
+    }
+    res += '-';
+  }
+  return res;
 }
 
-function init(e) {
-  analyzeUrl();
-  blockNumX = centerNumX * 3;
-  blockNumY = centerNumY * 3;
+function applyBlockStr(e, str)
+{
   for (let y = 0; y < blockNumY; ++y) {
     blocks[y] = [];
     for (let x = 0; x < blockNumX; ++x) {
       blocks[y][x] = 0;
     }
   }
-  {
-    let y = centerNumY;
-    let x = centerNumX;
-    for (const c of blockInitStr) {
-      if (c == '-') {
-        y++;
-        x = centerNumX;
-      } else {
-        blocks[y][x] = parseInt(c);
-        x++;
-      }
+  let y = centerNumY;
+  let x = centerNumX;
+  for (const c of str) {
+    if (c == '-') {
+      y++;
+      if (y == centerNumY * 2) break;
+      x = centerNumX;
+    } else {
+      if (x < centerNumX * 2) blocks[y][x] = parseInt(c);
+      x++;
     }
   }
-  initSvg();
   update(e);
 }
 
+function setSize(width, height)
+{
+  blockNumX = centerNumX * 3;
+  blockNumY = centerNumY * 3;
+}
+
+function changeSize(e)
+{
+  let blockStr = getBlockStr();
+  centerNumX = Number(elemWidth.value);
+  centerNumY = Number(elemHeight.value);
+  setSize(centerNumX, centerNumY);
+  applyBlockStr(e, blockStr);
+}
+
+function init(e) {
+  elemSvg = document.getElementById('svgBoard');
+  elemWidth = document.getElementById('width');
+  elemHeight = document.getElementById('height');
+
+  analyzeUrl();
+  setSize(centerNumX, centerNumY);
+  applyBlockStr(e, initialBlockStr);
+
+  {
+    elemSvg.addEventListener('mousedown', pressOn, false);
+    elemSvg.addEventListener('touchstart', pressOn, false);
+    elemSvg.addEventListener('mousemove', cursorMoved, false);
+    elemSvg.addEventListener('touchmove', cursorMoved, false);
+    elemSvg.addEventListener('mouseup', pressOff, false);
+    elemSvg.addEventListener('touchend', pressOff, false);
+
+    elemWidth.value = centerNumX;
+    elemHeight.value = centerNumY;
+    elemWidth.addEventListener('change', changeSize, false);
+    elemHeight.addEventListener('change', changeSize, false);
+  }
+}
+
 function draw(e) {
-  while (svg.firstChild) {
-    svg.removeChild(svg.firstChild);
+  while (elemSvg.firstChild) {
+    elemSvg.removeChild(elemSvg.firstChild);
   }
   let g = document.createElementNS(SVG_NS, 'g');
 
@@ -90,7 +131,7 @@ function draw(e) {
   let selectedX;
   let selectedY;
   if (points.length != 0) {
-    let bcRect = svg.getBoundingClientRect();
+    let bcRect = elemSvg.getBoundingClientRect();
     let cursorX;
     let cursorY;
     if (typeof e.touches !== 'undefined') {
@@ -178,7 +219,7 @@ function draw(e) {
     circle.setAttribute('fill', isSelected ? 'black' : 'red');
     g.appendChild(circle);
   }
-  svg.appendChild(g);
+  elemSvg.appendChild(g);
 }
 
 function clamp(x, min, max) {
@@ -194,7 +235,7 @@ let prevY;
 let state;
 function calcXY(e) {
   {
-    let bcRect = svg.getBoundingClientRect();
+    let bcRect = elemSvg.getBoundingClientRect();
     if (typeof e.touches !== 'undefined') {
       x = e.touches[0].clientX - bcRect.left;
       y = e.touches[0].clientY - bcRect.top;
