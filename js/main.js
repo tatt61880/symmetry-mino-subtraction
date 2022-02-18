@@ -371,10 +371,10 @@ function isConnected(f) {
     for (let i = 0; i < 4; i++) {
       let xx = xy[0] + dx[i];
       let yy = xy[1] + dy[i];
-      if (xx < 0) continue;
-      if (yy < 0) continue;
-      if (xx >= blockNumX) continue;
-      if (yy >= blockNumY) continue;
+      if (xx == -1) continue;
+      if (yy == -1) continue;
+      if (xx == blockNumX) continue;
+      if (yy == blockNumY) continue;
       if (f(b[yy][xx])) {
         b[yy][xx] = 0;
         st.push([xx, yy]);
@@ -462,6 +462,8 @@ function isSymmetrySub(cx, cy) {
       for (let minX = 0; minX < maxMinX; ++minX) {
         for (let maxX = Math.max(minX, minMaxX); maxX < blockNumX; ++maxX) {
           removeB();
+          if (!symmetrySub(cx, cy)) continue;
+          if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
           if (!symmetrySub(cx, cy)) continue;
           if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
           if (!symmetrySub(cx, cy)) continue;
