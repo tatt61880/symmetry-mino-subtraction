@@ -86,6 +86,8 @@ function setSize(width, height)
 {
   blockNumX = centerNumX * 3;
   blockNumY = centerNumY * 3;
+  elemSvg.setAttribute('width', blockNumX * blockSize);
+  elemSvg.setAttribute('height', blockNumY * blockSize);
 }
 
 function changeSize(e)
