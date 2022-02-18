@@ -14,12 +14,15 @@ const blockSize = 25;
 const stateNone = 0;
 const stateA = 1;
 const stateB = 2;
+const dy = [1, 0, -1, 0];
+const dx = [0, 1, 0, -1];
 
 let blocks = [];
 let points = [];
 let elemSvg;
 let elemWidth;
 let elemHeight;
+let elemText;
 
 function analyzeUrl() {
   let paravalsStr = location.href.split('?')[1];
@@ -82,6 +85,11 @@ function applyBlockStr(e, str)
   update(e);
 }
 
+function setText(str)
+{
+  text.innerText = str;
+}
+
 function setSize(width, height)
 {
   blockNumX = centerNumX * 3;
@@ -92,7 +100,7 @@ function setSize(width, height)
 
 function changeSize(e)
 {
-  let blockStr = getBlockStr();
+  const blockStr = getBlockStr();
   centerNumX = Number(elemWidth.value);
   centerNumY = Number(elemHeight.value);
   setSize(centerNumX, centerNumY);
@@ -103,6 +111,7 @@ function init(e) {
   elemSvg = document.getElementById('svgBoard');
   elemWidth = document.getElementById('width');
   elemHeight = document.getElementById('height');
+  elemText = document.getElementById('text');
 
   analyzeUrl();
   setSize(centerNumX, centerNumY);
@@ -359,8 +368,6 @@ function isConnected(f) {
   while (!st.empty()) {
     cnt++;
     let xy = st.pop();
-    const dy = [1, 0, -1, 0];
-    const dx = [0, 1, 0, -1];
     for (let i = 0; i < 4; i++) {
       let xx = xy[0] + dx[i];
       let yy = xy[1] + dy[i];
@@ -478,6 +485,7 @@ function isSymmetrySub(cx, cy) {
 }
 
 function update(e) {
+  const startTime = Date.now();
   points = [];
   if (count(isA) != 0 && isConnected(isA)) {
     for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
@@ -488,6 +496,8 @@ function update(e) {
       }
     }
   }
+  const endTime = Date.now();
+  setText(`${endTime - startTime}ms`);
   draw(e);
 }
 
