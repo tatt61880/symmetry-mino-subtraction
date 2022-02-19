@@ -1,5 +1,5 @@
 'use strict';
-
+const version = 'v1.0.0';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -112,6 +112,7 @@ function init(e) {
   elemWidth = document.getElementById('width');
   elemHeight = document.getElementById('height');
   elemText = document.getElementById('text');
+  document.getElementById('version').innerText = version;
 
   analyzeUrl();
   setSize(centerNumX, centerNumY);
