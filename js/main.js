@@ -1,5 +1,5 @@
 'use strict';
-const version = 'v1.0.0';
+const version = 'v1.0.1';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -506,7 +506,8 @@ function isSymmetrySub(cx, cy) {
 function update(e) {
   const startTime = Date.now();
   points = [];
-  if (count(isA) != 0 && isConnected(isA)) {
+  //if (count(isA) != 0 && isConnected(isA)) {
+  if (count(isA) != 0) {
     for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
       for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
         if (isSymmetrySub(cx, cy)) {
