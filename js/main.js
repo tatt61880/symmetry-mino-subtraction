@@ -119,11 +119,8 @@ function init(e) {
 
   {
     elemSvg.addEventListener('mousedown', pressOn, false);
-    elemSvg.addEventListener('touchstart', pressOn, false);
     elemSvg.addEventListener('mousemove', cursorMoved, false);
-    elemSvg.addEventListener('touchmove', cursorMoved, false);
     elemSvg.addEventListener('mouseup', pressOff, false);
-    elemSvg.addEventListener('touchend', pressOff, false);
 
     elemWidth.value = centerNumX;
     elemHeight.value = centerNumY;
@@ -259,6 +256,14 @@ function calcXY(e) {
   }
 }
 
+function preventDefault(e) {
+  e.preventDefault(); // iOSで連続でボタンを押しているとダブルクリック判定されて画面が移動してしまったりするので。
+}
+
+function pressOff(e) {
+  pressFlag = false;
+}
+
 function pressOn(e) {
   calcXY(e);
   if (x < centerNumX) return;
@@ -278,13 +283,24 @@ function pressOn(e) {
   cursorMoved(e);
 }
 
-function preventDefault(e) {
-  e.preventDefault(); // iOSで連続でボタンを押しているとダブルクリック判定されて画面が移動してしまったりするので。
-}
+function cursorMoved(e) {
+  if (!pressFlag) {
+    draw(e);
+    return;
+  }
 
-function pressOff(e) {
-  preventDefault(e);
-  pressFlag = false;
+  calcXY(e);
+  if (x < centerNumX) return;
+  if (2 * centerNumX <= x) return;
+  if (y < centerNumY) return;
+  if (2 * centerNumY <= y) return;
+
+  if (x == prevX && y == prevY) return;
+  prevX = x;
+  prevY = y;
+  blocks[y][x] = state;
+
+  update(e);
 }
 
 function removeB() {
@@ -501,26 +517,6 @@ function update(e) {
   const endTime = Date.now();
   setText(`${endTime - startTime}ms`);
   draw(e);
-}
-
-function cursorMoved(e) {
-  if (!pressFlag) {
-    draw(e);
-    return;
-  }
-
-  calcXY(e);
-  if (x < centerNumX) return;
-  if (2 * centerNumX <= x) return;
-  if (y < centerNumY) return;
-  if (2 * centerNumY <= y) return;
-
-  if (x == prevX && y == prevY) return;
-  prevX = x;
-  prevY = y;
-  blocks[y][x] = state;
-
-  update(e);
 }
 
 // {{{ Stack
