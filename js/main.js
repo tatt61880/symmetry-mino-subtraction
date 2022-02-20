@@ -469,8 +469,7 @@ function count(f) {
 
 function isSymmetrySub(cx, cy) {
   removeB();
-  symmetrySub(cx, cy);
-  if (count(isB) == 0) return false;
+  if (symmetrySub(cx, cy) <= 0) return false;
   let maxMinY = blockNumY - 1;
   let minMaxY = 0;
   let maxMinX = blockNumX - 1;
