@@ -1,5 +1,5 @@
 'use strict';
-const version = 'v1.0.1';
+const version = 'v1.0.2';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -23,6 +23,7 @@ let elemSvg;
 let elemWidth;
 let elemHeight;
 let elemText;
+let elemUrl;
 
 function analyzeUrl() {
   let paravalsStr = location.href.split('?')[1];
@@ -50,16 +51,23 @@ function analyzeParavals(paravalsStr) {
   }
 }
 
+function writeUrlInfo() {
+  const url = location.href.split('?')[0] + `?w=${centerNumX}&h=${centerNumY}&s=${getBlockStr()}`;
+  elemUrl.innerHTML = `現在の盤面のURL: <a href="${url}">${url}</a>`;
+}
+
 function getBlockStr()
 {
   let res = '';
   for (let y = 0; y < centerNumY; ++y) {
+    let line = '';
     for (let x = 0; x < centerNumX; ++x) {
-      res += isA(blocks[centerNumY + y][centerNumX + x]) ? '1' : '0'
+      line += isA(blocks[centerNumY + y][centerNumX + x]) ? '1' : '0'
     }
+    res += line.replace(/0+$/, '');
     res += '-';
   }
-  return res;
+  return res.replace(/-+$/, '');
 }
 
 function applyBlockStr(e, str)
@@ -87,7 +95,7 @@ function applyBlockStr(e, str)
 
 function setText(str)
 {
-  text.innerText = str;
+  elemText.innerText = str;
 }
 
 function setSize(width, height)
@@ -112,6 +120,7 @@ function init(e) {
   elemWidth = document.getElementById('width');
   elemHeight = document.getElementById('height');
   elemText = document.getElementById('text');
+  elemUrl = document.getElementById('url');
   document.getElementById('version').innerText = version;
 
   analyzeUrl();
@@ -518,6 +527,7 @@ function update(e) {
   }
   const endTime = Date.now();
   setText(`${endTime - startTime}ms`);
+  writeUrlInfo();
   draw(e);
 }
 

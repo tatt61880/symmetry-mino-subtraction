@@ -2,17 +2,18 @@
 <html lang="ja">
 <head>
   <title>点対称ポリオミノの引き算</title>
-  <script src="./js/main.js?2022-02-20"></script>
+  <script src="./js/main.js?2022-02-20-b"></script>
 </head>
 
 <body id="body" class="text-regular">
   <div style="text-align:center;">
     <p id="version"><br></p>
-    width:<input type="number" id="width" min="3" max="7">
-    height:<input type="number" id="height" min="3" max="7"><br>
-    (※値を7までに制限しています。数値が大きいほど処理が重くなります。)<br>
+    width:<input type="number" id="width" min="3" style="width: 30px;">
+    height:<input type="number" id="height" min="3" style="width: 30px;"><br>
+    ↑数値が大きいほど処理が重くなります。6以上はかなり重いです。<br>
     <svg class="text-normal" style="margin:5px 15px 2px; padding:0px;" id="svgBoard" width="400" height="800"></svg>
     <p id="text"></p>
+    <p id="url"></p>
   </div>
 </body>
 </html>
