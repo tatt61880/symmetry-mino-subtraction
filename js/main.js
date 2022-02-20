@@ -526,7 +526,7 @@ function update(e) {
     }
   }
   const endTime = Date.now();
-  setText(`${endTime - startTime}ms`);
+  setText(`処理時間: ${endTime - startTime}ms`);
   writeUrlInfo();
   draw(e);
 }
