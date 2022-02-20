@@ -1,5 +1,5 @@
 'use strict';
-const version = 'v1.0.2';
+const version = 'Version: 2022.02.20';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -10,6 +10,7 @@ let blockNumX;
 let blockNumY;
 let initialBlockStr = '';
 const blockSize = 25;
+const maxReflection = 4;
 
 const stateNone = 0;
 const stateA = 1;
@@ -412,6 +413,7 @@ function isConnected(f) {
 
 // 図形(AUB)を点Cに点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
 function symmetrySub(cx, cy) {
+  let res = 0;
   for (let y = 0; y < blockNumY; ++y) {
     for (let x = 0; x < blockNumX; ++x) {
       if (blocks[y][x] != stateNone) {
@@ -420,38 +422,41 @@ function symmetrySub(cx, cy) {
         const bx = (2 * cx - ax - 1) / 2;
         const by = (2 * cy - ay - 1) / 2;
         // 処理速度等の都合から、あらかじめ用意したエリア外にはみでる場合は不適切とします。
-        if (bx < 0) return false;
-        if (by < 0) return false;
-        if (bx >= blockNumX) return false;
-        if (by >= blockNumY) return false;
+        if (bx < 0) return -1;
+        if (by < 0) return -1;
+        if (bx >= blockNumX) return -1;
+        if (by >= blockNumY) return -1;
 
         if (blocks[by][bx] == stateNone) {
           blocks[by][bx] = stateB;
+          res++;
         }
       }
     }
   }
-  return true;
+  return res;
 }
 
 // 図形Bを((minX + maxX) / 2, (minY + maxY) / 2)で点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
 function symmetrySub2(minX, maxX, minY, maxY) {
+  let res = 0;
   for (let y = minY; y <= maxY; ++y) {
     for (let x = minX; x <= maxX; ++x) {
       if (blocks[maxY - (y - minY)][maxX - (x - minX)] == stateB) {
         switch (blocks[y][x]) {
         case stateNone:
           blocks[y][x] = stateB;
+          res++;
           break;
         case stateB:
           break;
         default:
-          return false;
+          return -1;
         }
       }
     }
   }
-  return true;
+  return res;
 }
 
 function count(f) {
@@ -488,21 +493,30 @@ function isSymmetrySub(cx, cy) {
       for (let minX = 0; minX <= maxMinX; ++minX) {
         for (let maxX = Math.max(minX, minMaxX); maxX < blockNumX; ++maxX) {
           removeB();
-          if (!symmetrySub(cx, cy)) continue;
-          if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
-          if (!symmetrySub(cx, cy)) continue;
-          if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
-          if (!symmetrySub(cx, cy)) continue;
-          if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
-          if (!symmetrySub(cx, cy)) continue;
-          if (!symmetrySub2(minX, maxX, minY, maxY)) continue;
+          let ret = 0;
+          let flag = true;
+          for (let i = 0; i < maxReflection; i++) {
+            ret = symmetrySub(cx, cy);
+            if (ret == -1) {
+              flag = false;
+              break;
+            }
+            if (ret == 0) break;
+            ret = symmetrySub2(minX, maxX, minY, maxY);
+            if (ret == -1) {
+              flag = false;
+              break;
+            }
+            if (ret == 0) break;
+          }
+          if (!flag) continue;
 
-          // Is A and B connected?
-          if (!isConnected(isAorB)) continue;
           // Is B connected?
           if (!isConnected(isB)) continue;
           // Is B symmetry?
           if (!isSymmetry(isB)) continue;
+          // Is A and B connected?
+          if (!isConnected(isAorB)) continue;
           // Is A and B symmetry?
           if (!isSymmetry(isAorB)) continue;
           return true;
