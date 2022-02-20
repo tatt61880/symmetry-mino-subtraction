@@ -10,7 +10,7 @@ let blockNumX;
 let blockNumY;
 let initialBlockStr = '';
 const blockSize = 25;
-const maxReflection = 10; // 各中心点で点対称操作を行う回数の上限。
+const maxReflection = 100; // 各中心点で点対称操作を行う回数の上限。
 
 const stateNone = 0;
 const stateA = 1;
@@ -54,7 +54,7 @@ function analyzeParavals(paravalsStr) {
 
 function writeUrlInfo() {
   const url = location.href.split('?')[0] + `?w=${centerNumX}&h=${centerNumY}&s=${getBlockStr()}`;
-  elemUrl.innerHTML = `現在の盤面のURL: <a href="${url}">${url}</a>`;
+  elemUrl.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
 }
 
 function getBlockStr()
