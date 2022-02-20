@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.02.20';
+const version = 'Version: 2022.02.20-b';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -10,7 +10,7 @@ let blockNumX;
 let blockNumY;
 let initialBlockStr = '';
 const blockSize = 25;
-const maxReflection = 4;
+const maxReflection = 10; // 各中心点で点対称操作を行う回数の上限。
 
 const stateNone = 0;
 const stateA = 1;
@@ -326,9 +326,7 @@ function removeB() {
 
 function isAorB(x)
 {
-  if (x == stateA) return true;
-  if (x == stateB) return true;
-  return false;
+  return x != stateNone;
 }
 
 function isA(x)
@@ -526,17 +524,49 @@ function isSymmetrySub(cx, cy) {
   }
 }
 
+function getCenter(f)
+{
+  let minX = blockNumX;
+  let maxX = 0;
+  let minY = blockNumY;
+  let maxY = 0;
+  for (let y = 0; y < blockNumY; ++y) {
+    for (let x = 0; x < blockNumX; ++x) {
+      if (f(blocks[y][x])) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  return {x: minX + maxX + 1, y: minY + maxY + 1};
+}
+
 function update(e) {
   const startTime = Date.now();
   points = [];
   //if (count(isA) != 0 && isConnected(isA)) {
-  if (count(isA) != 0) {
+  const countA = count(isA);
+  if (countA == 1) {
+    const cp = getCenter(isA);
     for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
       for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
-        if (isSymmetrySub(cx, cy)) {
+        if (cp.x == cx || cp.y == cy) {
           points.push({y: cy, x: cx});
         }
       }
+    }
+  } else if (countA != 0) {
+    for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
+      for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
+        if (isSymmetrySub(cx, cy)) {
+          points.push({x: cx, y: cy});
+        }
+      }
+    }
+    if (isSymmetry(isA)) {
+      points.push(getCenter(isA));
     }
   }
   const endTime = Date.now();
