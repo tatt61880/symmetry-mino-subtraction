@@ -526,7 +526,7 @@ function update(e) {
     }
   }
   const endTime = Date.now();
-  setText(`${endTime - startTime}msec`);
+  setText(`${endTime - startTime}ms`);
   writeUrlInfo();
   draw(e);
 }
