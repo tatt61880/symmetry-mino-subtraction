@@ -234,7 +234,7 @@ function draw(e) {
     const isSelected = point.y == selectedY && point.x == selectedX;
     circle.setAttribute('cy', blockSize * point.y / 2.0);
     circle.setAttribute('cx', blockSize * point.x / 2.0);
-    circle.setAttribute('r', isSelected ? 3.0 : 2.0);
+    circle.setAttribute('r', isSelected ? 5.0 : 2.5);
     circle.setAttribute('fill', isSelected ? 'black' : 'red');
     g.appendChild(circle);
   }
