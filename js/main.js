@@ -482,9 +482,15 @@ function isSymmetrySub(cx, cy) {
   }
 
   for (let minY = 0; minY <= maxMinY; ++minY) {
-    for (let maxY = Math.max(minY, minMaxY); maxY < blockNumY; ++maxY) {
+    for (let maxY = blockNumY - 1; maxY >= Math.max(minY, minMaxY); --maxY) {
+      if (minY != 0 && minY == (blockNumY - 1 - maxY)) {
+        continue;
+      }
       for (let minX = 0; minX <= maxMinX; ++minX) {
-        for (let maxX = Math.max(minX, minMaxX); maxX < blockNumX; ++maxX) {
+        for (let maxX = blockNumX - 1; maxX >= Math.max(minX, minMaxX); --maxX) {
+          if (maxX != 0 && maxX == (blockNumX - 1 - maxX)) {
+            continue;
+          }
           removeB();
           let ret = 0;
           let flag = true;
