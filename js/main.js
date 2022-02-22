@@ -40,9 +40,9 @@ function analyzeParavals(paravalsStr) {
     let paraval = paravalsArray[i].split('=');
     if (paraval.length == 2) {
       if (paraval[0] == 'w') {
-        width = clamp(Number(paraval[1]), 3, 10);
+        width = Number(paraval[1]);
       } else if (paraval[0] == 'h') {
-        height = clamp(Number(paraval[1]), 3, 10);
+        height = Number(paraval[1]);
       } else if (paraval[0] == 's') {
         initialBlockStr = paraval[1];
       } else {
@@ -492,21 +492,20 @@ function isSymmetrySub(cx, cy) {
             continue;
           }
           removeB();
-          let ret = 0;
           let flag = true;
           for (let i = 0; i < maxReflection; i++) {
-            ret = symmetrySub(cx, cy);
+            const ret = symmetrySub(cx, cy);
             if (ret == -1) {
               flag = false;
               break;
             }
             if (ret == 0) break;
-            ret = symmetrySub2(minX, maxX, minY, maxY);
-            if (ret == -1) {
+            const ret2 = symmetrySub2(minX, maxX, minY, maxY);
+            if (ret2 == -1) {
               flag = false;
               break;
             }
-            if (ret == 0) break;
+            if (ret2 == 0) break;
           }
           if (!flag) continue;
 
