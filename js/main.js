@@ -255,18 +255,16 @@ let prevX;
 let prevY;
 let state;
 function calcXY(e) {
-  {
-    const bcRect = elemSvg.getBoundingClientRect();
-    if (typeof e.touches !== 'undefined') {
-      x = e.touches[0].clientX - bcRect.left;
-      y = e.touches[0].clientY - bcRect.top;
-    } else {
-      x = e.clientX - bcRect.left;
-      y = e.clientY - bcRect.top;
-    }
-    x = clamp(Math.floor(x / blockSize), 0, width3 - 1);
-    y = clamp(Math.floor(y / blockSize), 0, height3 - 1);
+  const bcRect = elemSvg.getBoundingClientRect();
+  if (typeof e.touches !== 'undefined') {
+    x = e.touches[0].clientX - bcRect.left;
+    y = e.touches[0].clientY - bcRect.top;
+  } else {
+    x = e.clientX - bcRect.left;
+    y = e.clientY - bcRect.top;
   }
+  x = clamp(Math.floor(x / blockSize), 0, width3 - 1);
+  y = clamp(Math.floor(y / blockSize), 0, height3 - 1);
 }
 
 function pressOff() {
