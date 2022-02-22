@@ -29,13 +29,13 @@ let elemText;
 let elemUrl;
 
 function analyzeUrl() {
-  let paravalsStr = location.href.split('?')[1];
+  const paravalsStr = location.href.split('?')[1];
   if (paravalsStr == null) paravalsStr = '';
   analyzeParavals(paravalsStr);
 }
 
 function analyzeParavals(paravalsStr) {
-  let paravalsArray = paravalsStr.split('&');
+  const paravalsArray = paravalsStr.split('&');
   if (!paravalsArray.length) return;
 
   for (let i = 0; i < paravalsArray.length; ++i) {
@@ -364,11 +364,10 @@ function isSymmetry(f) {
 
 function isConnected(f) {
   let countF = 0;
-  let b = [];
+  let b = new Array(height3);
   for (let y = 0; y < height3; ++y) {
-    b[y] = [];
+    b[y] = blocks[y].slice();
     for (let x = 0; x < width3; ++x) {
-      b[y][x] = blocks[y][x];
       if (f(b[y][x])) countF++;
     }
   }
