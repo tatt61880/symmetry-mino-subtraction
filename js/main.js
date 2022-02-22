@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.02.22';
+const version = 'Version: 2022.02.22-b';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -483,12 +483,12 @@ function isSymmetrySub(cx, cy) {
 
   for (let minY = 0; minY <= maxMinY; ++minY) {
     for (let maxY = height3 - 1; maxY >= Math.max(minY, minMaxY); --maxY) {
-      if (minY != 0 && minY == height3 - 1 - maxY) {
+      if (minY != 0 && maxY != height3 - 1) {
         continue;
       }
       for (let minX = 0; minX <= maxMinX; ++minX) {
         for (let maxX = width3 - 1; maxX >= Math.max(minX, minMaxX); --maxX) {
-          if (minX != 0 && minX == width3 - 1 - maxX) {
+          if (minX != 0 && maxX != width3 - 1) {
             continue;
           }
           removeB();
