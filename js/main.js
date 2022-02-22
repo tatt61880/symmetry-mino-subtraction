@@ -63,7 +63,7 @@ function getBlockStr()
   for (let y = 0; y < centerNumY; ++y) {
     let line = '';
     for (let x = 0; x < centerNumX; ++x) {
-      line += isA(blocks[centerNumY + y][centerNumX + x]) ? '1' : '0'
+      line += isA(blocks[centerNumY + y][centerNumX + x]) ? '1' : '0';
     }
     res += line.replace(/0+$/, '');
     res += '-';
@@ -101,8 +101,8 @@ function setText(str)
 
 function setSize(width, height)
 {
-  blockNumX = centerNumX * 3;
-  blockNumY = centerNumY * 3;
+  blockNumX = width * 3;
+  blockNumY = height * 3;
   elemSvg.setAttribute('width', blockNumX * blockSize);
   elemSvg.setAttribute('height', blockNumY * blockSize);
 }
@@ -267,11 +267,7 @@ function calcXY(e) {
   }
 }
 
-function preventDefault(e) {
-  e.preventDefault(); // iOSで連続でボタンを押しているとダブルクリック判定されて画面が移動してしまったりするので。
-}
-
-function pressOff(e) {
+function pressOff() {
   pressFlag = false;
 }
 
