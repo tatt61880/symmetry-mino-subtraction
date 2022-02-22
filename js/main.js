@@ -484,12 +484,12 @@ function isSymmetrySub(cx, cy) {
   for (let minY = 0; minY <= maxMinY; ++minY) {
     for (let maxY = height3 - 1; maxY >= Math.max(minY, minMaxY); --maxY) {
       if (minY != 0 && maxY != height3 - 1) {
-        continue;
+        break;
       }
       for (let minX = 0; minX <= maxMinX; ++minX) {
         for (let maxX = width3 - 1; maxX >= Math.max(minX, minMaxX); --maxX) {
           if (minX != 0 && maxX != width3 - 1) {
-            continue;
+            break;
           }
           removeB();
           let flag = true;
