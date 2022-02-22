@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.02.22-b';
+const version = 'Version: 2022.02.23';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -15,11 +15,13 @@ const maxReflection = 100; // 各中心点で点対称操作を行う回数の�
 const stateNone = 0;
 const stateA = 1;
 const stateB = 2;
+
 const dy = [1, 0, -1, 0];
 const dx = [0, 1, 0, -1];
 
 let blocks = [];
 let points = [];
+
 let elemSvg;
 let elemWidth;
 let elemHeight;
@@ -144,13 +146,13 @@ function draw(e) {
   while (elemSvg.firstChild) {
     elemSvg.removeChild(elemSvg.firstChild);
   }
-  let g = document.createElementNS(SVG_NS, 'g');
+  const g = document.createElementNS(SVG_NS, 'g');
 
   removeB();
   let selectedX;
   let selectedY;
   if (points.length != 0) {
-    let bcRect = elemSvg.getBoundingClientRect();
+    const bcRect = elemSvg.getBoundingClientRect();
     let cursorX;
     let cursorY;
     if (typeof e.touches !== 'undefined') {
@@ -176,7 +178,7 @@ function draw(e) {
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
       if (blocks[y][x]) {
-        let rect = document.createElementNS(SVG_NS, 'rect');
+        const rect = document.createElementNS(SVG_NS, 'rect');
         rect.setAttribute('x', blockSize * x);
         rect.setAttribute('y', blockSize * y);
         rect.setAttribute('width', blockSize);
@@ -189,7 +191,7 @@ function draw(e) {
   }
 
   for (let y = 0; y <= height3; ++y) {
-    let line = document.createElementNS(SVG_NS, 'line');
+    const line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', 0);
     line.setAttribute('x2', blockSize * width3);
     line.setAttribute('y1', blockSize * y);
@@ -199,7 +201,7 @@ function draw(e) {
     g.appendChild(line);
   }
   for (let x = 0; x <= width3; ++x) {
-    let line = document.createElementNS(SVG_NS, 'line');
+    const line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', blockSize * x);
     line.setAttribute('x2', blockSize * x);
     line.setAttribute('y1', 0);
@@ -209,7 +211,7 @@ function draw(e) {
     g.appendChild(line);
   }
   for (let y = 1; y <= 2; ++y) {
-    let line = document.createElementNS(SVG_NS, 'line');
+    const line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', blockSize * width);
     line.setAttribute('x2', blockSize * width * 2);
     line.setAttribute('y1', blockSize * height * y);
@@ -219,7 +221,7 @@ function draw(e) {
     g.appendChild(line);
   }
   for (let x = 1; x <= 2; ++x) {
-    let line = document.createElementNS(SVG_NS, 'line');
+    const line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', blockSize * width * x);
     line.setAttribute('x2', blockSize * width * x);
     line.setAttribute('y1', blockSize * height);
@@ -230,7 +232,7 @@ function draw(e) {
   }
 
   for (const point of points) {
-    let circle = document.createElementNS(SVG_NS, 'circle');
+    const circle = document.createElementNS(SVG_NS, 'circle');
     const isSelected = point.y == selectedY && point.x == selectedX;
     circle.setAttribute('cy', blockSize * point.y / 2.0);
     circle.setAttribute('cx', blockSize * point.x / 2.0);
@@ -254,7 +256,7 @@ let prevY;
 let state;
 function calcXY(e) {
   {
-    let bcRect = elemSvg.getBoundingClientRect();
+    const bcRect = elemSvg.getBoundingClientRect();
     if (typeof e.touches !== 'undefined') {
       x = e.touches[0].clientX - bcRect.left;
       y = e.touches[0].clientY - bcRect.top;
@@ -343,10 +345,10 @@ function isSymmetry(f) {
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
       if (f(blocks[y][x])) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
       }
     }
   }
@@ -382,16 +384,16 @@ function isConnected(f) {
     }
   }
 
-  let st = new Stack();
+  const st = new Stack();
   st.push([x0, y0]);
   b[y0][x0] = 0;
   let cnt = 0;
   while (!st.empty()) {
     cnt++;
-    let xy = st.pop();
+    const xy = st.pop();
     for (let i = 0; i < 4; i++) {
-      let xx = xy[0] + dx[i];
-      let yy = xy[1] + dy[i];
+      const xx = xy[0] + dx[i];
+      const yy = xy[1] + dy[i];
       if (xx == -1) continue;
       if (yy == -1) continue;
       if (xx == width3) continue;
@@ -405,7 +407,7 @@ function isConnected(f) {
   return cnt == countF;
 }
 
-// 図形(AUB)を点Cに点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
+// 図形(AUB)を点Cで点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
 function symmetrySub(cx, cy) {
   let res = 0;
   for (let y = 0; y < height3; ++y) {
@@ -431,7 +433,7 @@ function symmetrySub(cx, cy) {
   return res;
 }
 
-// 図形Bを((minX + maxX) / 2, (minY + maxY) / 2)で点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
+// 図形Bを点((minX + maxX) / 2, (minY + maxY) / 2)で点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
 function symmetrySub2(minX, maxX, minY, maxY) {
   let res = 0;
   for (let y = minY; y <= maxY; ++y) {
@@ -442,9 +444,7 @@ function symmetrySub2(minX, maxX, minY, maxY) {
           blocks[y][x] = stateB;
           res++;
           break;
-        case stateB:
-          break;
-        default:
+        case stateA:
           return -1;
         }
       }
@@ -466,31 +466,29 @@ function count(f) {
 function isSymmetrySub(cx, cy) {
   removeB();
   if (symmetrySub(cx, cy) <= 0) return false;
-  let maxMinY = height3 - 1;
-  let minMaxY = 0;
-  let maxMinX = width3 - 1;
-  let minMaxX = 0;
+
+  let bMinY = height3;
+  let bMaxY = 0;
+  let bMinX = width3;
+  let bMaxX = 0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
       if (blocks[y][x] == stateB) {
-        maxMinY = Math.min(maxMinY, y);
-        minMaxY = Math.max(minMaxY, y);
-        maxMinX = Math.min(maxMinX, x);
-        minMaxX = Math.max(minMaxX, x);
+        bMinY = Math.min(bMinY, y);
+        bMaxY = Math.max(bMaxY, y);
+        bMinX = Math.min(bMinX, x);
+        bMaxX = Math.max(bMaxX, x);
       }
     }
   }
 
-  for (let minY = 0; minY <= maxMinY; ++minY) {
-    for (let maxY = height3 - 1; maxY >= Math.max(minY, minMaxY); --maxY) {
-      if (minY != 0 && maxY != height3 - 1) {
-        break;
-      }
-      for (let minX = 0; minX <= maxMinX; ++minX) {
-        for (let maxX = width3 - 1; maxX >= Math.max(minX, minMaxX); --maxX) {
-          if (minX != 0 && maxX != width3 - 1) {
-            break;
-          }
+  for (let minY = 0; minY <= bMinY; ++minY) {
+    for (let maxY = height3 - 1; maxY >= Math.max(minY, bMaxY); --maxY) {
+      if (minY != 0 && maxY != height3 - 1) break;
+      for (let minX = 0; minX <= bMinX; ++minX) {
+        for (let maxX = width3 - 1; maxX >= Math.max(minX, bMaxX); --maxX) {
+          if (minX != 0 && maxX != width3 - 1) break;
+
           removeB();
           let flag = true;
           for (let i = 0; i < maxReflection; i++) {
@@ -509,13 +507,9 @@ function isSymmetrySub(cx, cy) {
           }
           if (!flag) continue;
 
-          // Is B connected?
           if (!isConnected(isB)) continue;
-          // Is B symmetry?
           if (!isSymmetry(isB)) continue;
-          // Is A and B connected?
           if (!isConnected(isAorB)) continue;
-          // Is A and B symmetry?
           if (!isSymmetry(isAorB)) continue;
           return true;
         }
@@ -533,10 +527,10 @@ function getCenter(f)
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
       if (f(blocks[y][x])) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
       }
     }
   }
@@ -546,7 +540,6 @@ function getCenter(f)
 function update(e) {
   const startTime = Date.now();
   points = [];
-  //if (count(isA) != 0 && isConnected(isA)) {
   const countA = count(isA);
   if (countA == 1) {
     const cp = getCenter(isA);
