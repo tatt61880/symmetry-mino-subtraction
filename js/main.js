@@ -29,7 +29,7 @@ let elemText;
 let elemUrl;
 
 function analyzeUrl() {
-  const paravalsStr = location.href.split('?')[1];
+  let paravalsStr = location.href.split('?')[1];
   if (paravalsStr == null) paravalsStr = '';
   analyzeParavals(paravalsStr);
 }
@@ -363,13 +363,9 @@ function isSymmetry(f) {
 }
 
 function isConnected(f) {
-  let countF = 0;
-  let b = new Array(height3);
+  const b = new Array(height3);
   for (let y = 0; y < height3; ++y) {
     b[y] = blocks[y].slice();
-    for (let x = 0; x < width3; ++x) {
-      if (f(b[y][x])) countF++;
-    }
   }
   let x0;
   let y0;
@@ -386,9 +382,7 @@ function isConnected(f) {
   const st = new Stack();
   st.push([x0, y0]);
   b[y0][x0] = 0;
-  let cnt = 0;
   while (!st.empty()) {
-    cnt++;
     const xy = st.pop();
     for (let i = 0; i < 4; i++) {
       const xx = xy[0] + dx[i];
@@ -403,7 +397,13 @@ function isConnected(f) {
       }
     }
   }
-  return cnt == countF;
+
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
+      if (f(b[y][x])) return false;
+    }
+  }
+  return true;
 }
 
 // 図形(AUB)を点Cで点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
