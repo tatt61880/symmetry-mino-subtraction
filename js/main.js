@@ -4,10 +4,10 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-let centerNumX = 4;
-let centerNumY = 4;
-let blockNumX;
-let blockNumY;
+let width = 4;
+let height = 4;
+let width3;
+let height3;
 let initialBlockStr = '';
 const blockSize = 25;
 const maxReflection = 100; // 各中心点で点対称操作を行う回数の上限。
@@ -40,9 +40,9 @@ function analyzeParavals(paravalsStr) {
     let paraval = paravalsArray[i].split('=');
     if (paraval.length == 2) {
       if (paraval[0] == 'w') {
-        centerNumX = clamp(Number(paraval[1]), 3, 10);
+        width = clamp(Number(paraval[1]), 3, 10);
       } else if (paraval[0] == 'h') {
-        centerNumY = clamp(Number(paraval[1]), 3, 10);
+        height = clamp(Number(paraval[1]), 3, 10);
       } else if (paraval[0] == 's') {
         initialBlockStr = paraval[1];
       } else {
@@ -53,17 +53,17 @@ function analyzeParavals(paravalsStr) {
 }
 
 function writeUrlInfo() {
-  const url = location.href.split('?')[0] + `?w=${centerNumX}&h=${centerNumY}&s=${getBlockStr()}`;
+  const url = location.href.split('?')[0] + `?w=${width}&h=${height}&s=${getBlockStr()}`;
   elemUrl.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
 }
 
 function getBlockStr()
 {
   let res = '';
-  for (let y = 0; y < centerNumY; ++y) {
+  for (let y = 0; y < height; ++y) {
     let line = '';
-    for (let x = 0; x < centerNumX; ++x) {
-      line += isA(blocks[centerNumY + y][centerNumX + x]) ? '1' : '0';
+    for (let x = 0; x < width; ++x) {
+      line += isA(blocks[height + y][width + x]) ? '1' : '0';
     }
     res += line.replace(/0+$/, '');
     res += '-';
@@ -73,21 +73,21 @@ function getBlockStr()
 
 function applyBlockStr(e, str)
 {
-  for (let y = 0; y < blockNumY; ++y) {
+  for (let y = 0; y < height3; ++y) {
     blocks[y] = [];
-    for (let x = 0; x < blockNumX; ++x) {
+    for (let x = 0; x < width3; ++x) {
       blocks[y][x] = 0;
     }
   }
-  let y = centerNumY;
-  let x = centerNumX;
+  let y = height;
+  let x = width;
   for (const c of str) {
     if (c == '-') {
       y++;
-      if (y == centerNumY * 2) break;
-      x = centerNumX;
+      if (y == height * 2) break;
+      x = width;
     } else {
-      if (x < centerNumX * 2) blocks[y][x] = parseInt(c);
+      if (x < width * 2) blocks[y][x] = parseInt(c);
       x++;
     }
   }
@@ -99,20 +99,20 @@ function setText(str)
   elemText.innerText = str;
 }
 
-function setSize(width, height)
+function setSize(w, h)
 {
-  blockNumX = width * 3;
-  blockNumY = height * 3;
-  elemSvg.setAttribute('width', blockNumX * blockSize);
-  elemSvg.setAttribute('height', blockNumY * blockSize);
+  width3 = w * 3;
+  height3 = h * 3;
+  elemSvg.setAttribute('width', width3 * blockSize);
+  elemSvg.setAttribute('height', height3 * blockSize);
 }
 
 function changeSize(e)
 {
   const blockStr = getBlockStr();
-  centerNumX = Number(elemWidth.value);
-  centerNumY = Number(elemHeight.value);
-  setSize(centerNumX, centerNumY);
+  width = Number(elemWidth.value);
+  height = Number(elemHeight.value);
+  setSize(width, height);
   applyBlockStr(e, blockStr);
 }
 
@@ -125,7 +125,7 @@ function init(e) {
   document.getElementById('version').innerText = version;
 
   analyzeUrl();
-  setSize(centerNumX, centerNumY);
+  setSize(width, height);
   applyBlockStr(e, initialBlockStr);
 
   {
@@ -133,8 +133,8 @@ function init(e) {
     elemSvg.addEventListener('mousemove', cursorMoved, false);
     elemSvg.addEventListener('mouseup', pressOff, false);
 
-    elemWidth.value = centerNumX;
-    elemHeight.value = centerNumY;
+    elemWidth.value = width;
+    elemHeight.value = height;
     elemWidth.addEventListener('change', changeSize, false);
     elemHeight.addEventListener('change', changeSize, false);
   }
@@ -173,8 +173,8 @@ function draw(e) {
     isSymmetrySub(selectedX, selectedY);
   }
 
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (blocks[y][x]) {
         let rect = document.createElementNS(SVG_NS, 'rect');
         rect.setAttribute('x', blockSize * x);
@@ -188,42 +188,42 @@ function draw(e) {
     }
   }
 
-  for (let y = 0; y <= blockNumY; ++y) {
+  for (let y = 0; y <= height3; ++y) {
     let line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', 0);
-    line.setAttribute('x2', blockSize * blockNumX);
+    line.setAttribute('x2', blockSize * width3);
     line.setAttribute('y1', blockSize * y);
     line.setAttribute('y2', blockSize * y);
     line.setAttribute('stroke', 'black');
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
-  for (let x = 0; x <= blockNumX; ++x) {
+  for (let x = 0; x <= width3; ++x) {
     let line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', blockSize * x);
     line.setAttribute('x2', blockSize * x);
     line.setAttribute('y1', 0);
-    line.setAttribute('y2', blockSize * blockNumY);
+    line.setAttribute('y2', blockSize * height3);
     line.setAttribute('stroke', 'black');
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
   for (let y = 1; y <= 2; ++y) {
     let line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('x1', blockSize * centerNumX);
-    line.setAttribute('x2', blockSize * centerNumX * 2);
-    line.setAttribute('y1', blockSize * centerNumY * y);
-    line.setAttribute('y2', blockSize * centerNumY * y);
+    line.setAttribute('x1', blockSize * width);
+    line.setAttribute('x2', blockSize * width * 2);
+    line.setAttribute('y1', blockSize * height * y);
+    line.setAttribute('y2', blockSize * height * y);
     line.setAttribute('stroke', 'black');
     line.setAttribute('stroke-dasharray', '2, 2');
     g.appendChild(line);
   }
   for (let x = 1; x <= 2; ++x) {
     let line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('x1', blockSize * centerNumX * x);
-    line.setAttribute('x2', blockSize * centerNumX * x);
-    line.setAttribute('y1', blockSize * centerNumY);
-    line.setAttribute('y2', blockSize * centerNumY * 2);
+    line.setAttribute('x1', blockSize * width * x);
+    line.setAttribute('x2', blockSize * width * x);
+    line.setAttribute('y1', blockSize * height);
+    line.setAttribute('y2', blockSize * height * 2);
     line.setAttribute('stroke', 'black');
     line.setAttribute('stroke-dasharray', '2, 2');
     g.appendChild(line);
@@ -262,8 +262,8 @@ function calcXY(e) {
       x = e.clientX - bcRect.left;
       y = e.clientY - bcRect.top;
     }
-    x = clamp(Math.floor(x / blockSize), 0, blockNumX - 1);
-    y = clamp(Math.floor(y / blockSize), 0, blockNumY - 1);
+    x = clamp(Math.floor(x / blockSize), 0, width3 - 1);
+    y = clamp(Math.floor(y / blockSize), 0, height3 - 1);
   }
 }
 
@@ -273,10 +273,10 @@ function pressOff() {
 
 function pressOn(e) {
   calcXY(e);
-  if (x < centerNumX) return;
-  if (2 * centerNumX <= x) return;
-  if (y < centerNumY) return;
-  if (2 * centerNumY <= y) return;
+  if (x < width) return;
+  if (2 * width <= x) return;
+  if (y < height) return;
+  if (2 * height <= y) return;
 
   if (blocks[y][x] == stateA) {
     state = stateNone;
@@ -297,10 +297,10 @@ function cursorMoved(e) {
   }
 
   calcXY(e);
-  if (x < centerNumX) return;
-  if (2 * centerNumX <= x) return;
-  if (y < centerNumY) return;
-  if (2 * centerNumY <= y) return;
+  if (x < width) return;
+  if (2 * width <= x) return;
+  if (y < height) return;
+  if (2 * height <= y) return;
 
   if (x == prevX && y == prevY) return;
   prevX = x;
@@ -311,8 +311,8 @@ function cursorMoved(e) {
 }
 
 function removeB() {
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (blocks[y][x] == stateB) {
         blocks[y][x] = stateNone;
       }
@@ -336,12 +336,12 @@ function isB(x)
 }
 
 function isSymmetry(f) {
-  let minX = blockNumX;
+  let minX = width3;
   let maxX = 0;
-  let minY = blockNumY;
+  let minY = height3;
   let maxY = 0;
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (f(blocks[y][x])) {
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
@@ -350,8 +350,8 @@ function isSymmetry(f) {
       }
     }
   }
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (f(blocks[y][x]) && !f(blocks[maxY - (y - minY)][maxX - (x - minX)])) {
         return false;
       }
@@ -363,17 +363,17 @@ function isSymmetry(f) {
 function isConnected(f) {
   let countF = 0;
   let b = [];
-  for (let y = 0; y < blockNumY; ++y) {
+  for (let y = 0; y < height3; ++y) {
     b[y] = [];
-    for (let x = 0; x < blockNumX; ++x) {
+    for (let x = 0; x < width3; ++x) {
       b[y][x] = blocks[y][x];
       if (f(b[y][x])) countF++;
     }
   }
   let x0;
   let y0;
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (f(b[y][x])) {
         x0 = x;
         y0 = y;
@@ -394,8 +394,8 @@ function isConnected(f) {
       let yy = xy[1] + dy[i];
       if (xx == -1) continue;
       if (yy == -1) continue;
-      if (xx == blockNumX) continue;
-      if (yy == blockNumY) continue;
+      if (xx == width3) continue;
+      if (yy == height3) continue;
       if (f(b[yy][xx])) {
         b[yy][xx] = 0;
         st.push([xx, yy]);
@@ -408,8 +408,8 @@ function isConnected(f) {
 // 図形(AUB)を点Cに点対称になるようにしたとき元の図形と重なっていない部分を図形Bとする。
 function symmetrySub(cx, cy) {
   let res = 0;
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (blocks[y][x] != stateNone) {
         const ax = 2 * x + 1;
         const ay = 2 * y + 1;
@@ -418,8 +418,8 @@ function symmetrySub(cx, cy) {
         // 処理速度等の都合から、あらかじめ用意したエリア外にはみでる場合は不適切とします。
         if (bx < 0) return -1;
         if (by < 0) return -1;
-        if (bx >= blockNumX) return -1;
-        if (by >= blockNumY) return -1;
+        if (bx >= width3) return -1;
+        if (by >= height3) return -1;
 
         if (blocks[by][bx] == stateNone) {
           blocks[by][bx] = stateB;
@@ -455,8 +455,8 @@ function symmetrySub2(minX, maxX, minY, maxY) {
 
 function count(f) {
   let cnt = 0;
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (f(blocks[y][x])) cnt++;
     }
   }
@@ -466,12 +466,12 @@ function count(f) {
 function isSymmetrySub(cx, cy) {
   removeB();
   if (symmetrySub(cx, cy) <= 0) return false;
-  let maxMinY = blockNumY - 1;
+  let maxMinY = height3 - 1;
   let minMaxY = 0;
-  let maxMinX = blockNumX - 1;
+  let maxMinX = width3 - 1;
   let minMaxX = 0;
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (blocks[y][x] == stateB) {
         maxMinY = Math.min(maxMinY, y);
         minMaxY = Math.max(minMaxY, y);
@@ -482,13 +482,13 @@ function isSymmetrySub(cx, cy) {
   }
 
   for (let minY = 0; minY <= maxMinY; ++minY) {
-    for (let maxY = blockNumY - 1; maxY >= Math.max(minY, minMaxY); --maxY) {
-      if (minY != 0 && minY == (blockNumY - 1 - maxY)) {
+    for (let maxY = height3 - 1; maxY >= Math.max(minY, minMaxY); --maxY) {
+      if (minY != 0 && minY == (height3 - 1 - maxY)) {
         continue;
       }
       for (let minX = 0; minX <= maxMinX; ++minX) {
-        for (let maxX = blockNumX - 1; maxX >= Math.max(minX, minMaxX); --maxX) {
-          if (minX != 0 && minX == (blockNumX - 1 - maxX)) {
+        for (let maxX = width3 - 1; maxX >= Math.max(minX, minMaxX); --maxX) {
+          if (minX != 0 && minX == (width3 - 1 - maxX)) {
             continue;
           }
           removeB();
@@ -527,12 +527,12 @@ function isSymmetrySub(cx, cy) {
 
 function getCenter(f)
 {
-  let minX = blockNumX;
+  let minX = width3;
   let maxX = 0;
-  let minY = blockNumY;
+  let minY = height3;
   let maxY = 0;
-  for (let y = 0; y < blockNumY; ++y) {
-    for (let x = 0; x < blockNumX; ++x) {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
       if (f(blocks[y][x])) {
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
@@ -551,16 +551,16 @@ function update(e) {
   const countA = count(isA);
   if (countA == 1) {
     const cp = getCenter(isA);
-    for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
-      for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
+    for (let cy = height * 2; cy <= height * 4; ++cy) {
+      for (let cx = width * 2; cx <= width * 4; ++cx) {
         if (cp.x == cx || cp.y == cy) {
           points.push({y: cy, x: cx});
         }
       }
     }
   } else if (countA != 0) {
-    for (let cy = centerNumY * 2; cy <= centerNumY * 4; ++cy) {
-      for (let cx = centerNumX * 2; cx <= centerNumX * 4; ++cx) {
+    for (let cy = height * 2; cy <= height * 4; ++cy) {
+      for (let cx = width * 2; cx <= width * 4; ++cx) {
         if (isSymmetrySub(cx, cy)) {
           points.push({x: cx, y: cy});
         }
