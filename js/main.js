@@ -4,8 +4,8 @@ window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let pressFlag = false;
-let width = 4;
-let height = 4;
+let width = 5;
+let height = 5;
 let width3;
 let height3;
 let initialBlockStr = '';
