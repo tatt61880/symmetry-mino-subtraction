@@ -243,28 +243,28 @@ function draw(e) {
   elemSvg.appendChild(g);
 }
 
-function clamp(x, min, max) {
-  if (x < min) return min;
-  if (x > max) return max;
-  return x;
+function clamp(val, min, max) {
+  if (val < min) return min;
+  if (val > max) return max;
+  return val;
 }
 
-let x;
-let y;
+let curX;
+let curY;
 let prevX;
 let prevY;
 let state;
-function calcXY(e) {
+function setCurXY(e) {
   const bcRect = elemSvg.getBoundingClientRect();
   if (typeof e.touches !== 'undefined') {
-    x = e.touches[0].clientX - bcRect.left;
-    y = e.touches[0].clientY - bcRect.top;
+    curX = e.touches[0].clientX - bcRect.left;
+    curY = e.touches[0].clientY - bcRect.top;
   } else {
-    x = e.clientX - bcRect.left;
-    y = e.clientY - bcRect.top;
+    curX = e.clientX - bcRect.left;
+    curY = e.clientY - bcRect.top;
   }
-  x = clamp(Math.floor(x / blockSize), 0, width3 - 1);
-  y = clamp(Math.floor(y / blockSize), 0, height3 - 1);
+  curX = clamp(Math.floor(curX / blockSize), 0, width3 - 1);
+  curY = clamp(Math.floor(curY / blockSize), 0, height3 - 1);
 }
 
 function pressOff() {
@@ -272,13 +272,13 @@ function pressOff() {
 }
 
 function pressOn(e) {
-  calcXY(e);
-  if (x < width) return;
-  if (2 * width <= x) return;
-  if (y < height) return;
-  if (2 * height <= y) return;
+  setCurXY(e);
+  if (curX < width) return;
+  if (2 * width <= curX) return;
+  if (curY < height) return;
+  if (2 * height <= curY) return;
 
-  if (blocks[y][x] == stateA) {
+  if (blocks[curY][curX] == stateA) {
     state = stateNone;
   } else {
     state = stateA;
@@ -296,16 +296,16 @@ function cursorMoved(e) {
     return;
   }
 
-  calcXY(e);
-  if (x < width) return;
-  if (2 * width <= x) return;
-  if (y < height) return;
-  if (2 * height <= y) return;
+  setCurXY(e);
+  if (curX < width) return;
+  if (2 * width <= curX) return;
+  if (curY < height) return;
+  if (2 * height <= curY) return;
 
-  if (x == prevX && y == prevY) return;
-  prevX = x;
-  prevY = y;
-  blocks[y][x] = state;
+  if (curX == prevX && curY == prevY) return;
+  prevX = curX;
+  prevY = curY;
+  blocks[curY][curX] = state;
 
   update(e);
 }
