@@ -448,19 +448,19 @@ function hasSolution(cx, cy) {
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
       if (blocks[y][x] == stateB) {
-        bMinY = Math.min(bMinY, y);
-        bMaxY = Math.max(bMaxY, y);
         bMinX = Math.min(bMinX, x);
         bMaxX = Math.max(bMaxX, x);
+        bMinY = Math.min(bMinY, y);
+        bMaxY = Math.max(bMaxY, y);
       }
     }
   }
 
   for (let minY = 0; minY <= bMinY; ++minY) {
-    for (let maxY = height3 - 1; maxY >= Math.max(minY, bMaxY); --maxY) {
+    for (let maxY = height3 - 1; maxY >= bMaxY; --maxY) {
       if (minY != 0 && maxY != height3 - 1) break;
       for (let minX = 0; minX <= bMinX; ++minX) {
-        for (let maxX = width3 - 1; maxX >= Math.max(minX, bMaxX); --maxX) {
+        for (let maxX = width3 - 1; maxX >= bMaxX; --maxX) {
           if (minX != 0 && maxX != width3 - 1) break;
 
           removeB();
