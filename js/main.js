@@ -47,8 +47,6 @@ function analyzeParavals(paravalsStr) {
         height = Number(paraval[1]);
       } else if (paraval[0] == 's') {
         initialBlockStr = paraval[1];
-      } else {
-        continue;
       }
     }
   }
@@ -59,8 +57,7 @@ function writeUrlInfo() {
   elemUrl.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
 }
 
-function getBlockStr()
-{
+function getBlockStr() {
   let res = '';
   for (let y = 0; y < height; ++y) {
     let line = '';
@@ -96,21 +93,18 @@ function applyBlockStr(e, str)
   update(e);
 }
 
-function setText(str)
-{
+function setText(str) {
   elemText.innerText = str;
 }
 
-function setSize(w, h)
-{
+function setSize(w, h) {
   width3 = w * 3;
   height3 = h * 3;
   elemSvg.setAttribute('width', width3 * blockSize);
   elemSvg.setAttribute('height', height3 * blockSize);
 }
 
-function changeSize(e)
-{
+function changeSize(e) {
   const blockStr = getBlockStr();
   width = Number(elemWidth.value);
   height = Number(elemHeight.value);
@@ -142,6 +136,20 @@ function init(e) {
   }
 }
 
+function getCursorPos(e) {
+  const bcRect = elemSvg.getBoundingClientRect();
+  let cursorX;
+  let cursorY;
+  if (typeof e.touches !== 'undefined') {
+    cursorX = e.touches[0].clientX - bcRect.left;
+    cursorY = e.touches[0].clientY - bcRect.top;
+  } else {
+    cursorX = e.clientX - bcRect.left;
+    cursorY = e.clientY - bcRect.top;
+  }
+  return {x: cursorX, y: cursorY};
+}
+
 function draw(e) {
   while (elemSvg.firstChild) {
     elemSvg.removeChild(elemSvg.firstChild);
@@ -152,20 +160,10 @@ function draw(e) {
   let selectedX;
   let selectedY;
   if (points.length != 0) {
-    const bcRect = elemSvg.getBoundingClientRect();
-    let cursorX;
-    let cursorY;
-    if (typeof e.touches !== 'undefined') {
-      cursorX = e.touches[0].clientX - bcRect.left;
-      cursorY = e.touches[0].clientY - bcRect.top;
-    } else {
-      cursorX = e.clientX - bcRect.left;
-      cursorY = e.clientY - bcRect.top;
-    }
-
+    const cursorPos = getCursorPos(e);
     let minDist = -1;
     for (const point of points) {
-      let dist = (cursorX - point.x * blockSize / 2.0) ** 2 + (cursorY - point.y * blockSize / 2.0) ** 2;
+      let dist = (cursorPos.x - point.x * blockSize / 2.0) ** 2 + (cursorPos.y - point.y * blockSize / 2.0) ** 2;
       if (minDist == -1 || dist < minDist) {
         minDist = dist;
         selectedX = point.x;
@@ -253,18 +251,11 @@ let curX;
 let curY;
 let prevX;
 let prevY;
-let state;
+let drawingState;
 function setCurXY(e) {
-  const bcRect = elemSvg.getBoundingClientRect();
-  if (typeof e.touches !== 'undefined') {
-    curX = e.touches[0].clientX - bcRect.left;
-    curY = e.touches[0].clientY - bcRect.top;
-  } else {
-    curX = e.clientX - bcRect.left;
-    curY = e.clientY - bcRect.top;
-  }
-  curX = clamp(Math.floor(curX / blockSize), 0, width3 - 1);
-  curY = clamp(Math.floor(curY / blockSize), 0, height3 - 1);
+  const cursorPos = getCursorPos(e);
+  curX = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
+  curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
 }
 
 function pressOff() {
@@ -278,11 +269,7 @@ function pressOn(e) {
   if (curY < height) return;
   if (2 * height <= curY) return;
 
-  if (blocks[curY][curX] == stateA) {
-    state = stateNone;
-  } else {
-    state = stateA;
-  }
+  drawingState = blocks[curY][curX] == stateA ? stateNone : stateA;
 
   pressFlag = true;
   prevX = -1;
@@ -305,7 +292,7 @@ function cursorMoved(e) {
   if (curX == prevX && curY == prevY) return;
   prevX = curX;
   prevY = curY;
-  blocks[curY][curX] = state;
+  blocks[curY][curX] = drawingState;
 
   update(e);
 }
@@ -320,18 +307,15 @@ function removeB() {
   }
 }
 
-function isAorB(x)
-{
+function isAorB(x) {
   return x != stateNone;
 }
 
-function isA(x)
-{
+function isA(x) {
   return x == stateA;
 }
 
-function isB(x)
-{
+function isB(x) {
   return x == stateB;
 }
 
@@ -515,8 +499,7 @@ function isSymmetrySub(cx, cy) {
   }
 }
 
-function getCenter(f)
-{
+function getCenter(f) {
   let minX = width3;
   let maxX = 0;
   let minY = height3;
