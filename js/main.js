@@ -319,14 +319,14 @@ function isB(x) {
   return x == stateB;
 }
 
-function isSymmetry(f) {
+function isSymmetry(isX) {
   let minX = width3;
   let maxX = 0;
   let minY = height3;
   let maxY = 0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (f(blocks[y][x])) {
+      if (isX(blocks[y][x])) {
         minX = Math.min(minX, x);
         maxX = Math.max(maxX, x);
         minY = Math.min(minY, y);
@@ -336,7 +336,7 @@ function isSymmetry(f) {
   }
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (f(blocks[y][x]) && !f(blocks[maxY - (y - minY)][maxX - (x - minX)])) {
+      if (isX(blocks[y][x]) && !isX(blocks[maxY - (y - minY)][maxX - (x - minX)])) {
         return false;
       }
     }
@@ -344,7 +344,7 @@ function isSymmetry(f) {
   return true;
 }
 
-function isConnected(f) {
+function isConnected(isX) {
   const b = new Array(height3);
   for (let y = 0; y < height3; ++y) {
     b[y] = blocks[y].slice();
@@ -353,7 +353,7 @@ function isConnected(f) {
   let y0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (f(b[y][x])) {
+      if (isX(b[y][x])) {
         x0 = x;
         y0 = y;
         break;
@@ -373,7 +373,7 @@ function isConnected(f) {
       if (yy == -1) continue;
       if (xx == width3) continue;
       if (yy == height3) continue;
-      if (f(b[yy][xx])) {
+      if (isX(b[yy][xx])) {
         b[yy][xx] = 0;
         st.push([xx, yy]);
       }
@@ -382,7 +382,7 @@ function isConnected(f) {
 
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (f(b[y][x])) return false;
+      if (isX(b[y][x])) return false;
     }
   }
   return true;
@@ -432,16 +432,6 @@ function symmetrySub2(minX, maxX, minY, maxY) {
     }
   }
   return res;
-}
-
-function count(f) {
-  let cnt = 0;
-  for (let y = 0; y < height3; ++y) {
-    for (let x = 0; x < width3; ++x) {
-      if (f(blocks[y][x])) cnt++;
-    }
-  }
-  return cnt;
 }
 
 function isSymmetrySub(cx, cy) {
@@ -499,14 +489,14 @@ function isSymmetrySub(cx, cy) {
   }
 }
 
-function getCenter(f) {
+function getCenter(isX) {
   let minX = width3;
   let maxX = 0;
   let minY = height3;
   let maxY = 0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (f(blocks[y][x])) {
+      if (isX(blocks[y][x])) {
         minX = Math.min(minX, x);
         maxX = Math.max(maxX, x);
         minY = Math.min(minY, y);
@@ -515,6 +505,16 @@ function getCenter(f) {
     }
   }
   return {x: minX + maxX + 1, y: minY + maxY + 1};
+}
+
+function count(isX) {
+  let cnt = 0;
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
+      if (isX(blocks[y][x])) cnt++;
+    }
+  }
+  return cnt;
 }
 
 function update(e) {
