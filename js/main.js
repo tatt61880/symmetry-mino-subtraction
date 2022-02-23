@@ -170,7 +170,7 @@ function draw(e) {
         selectedY = point.y;
       }
     }
-    isSymmetrySub(selectedX, selectedY);
+    hasSolution(selectedX, selectedY);
   }
 
   for (let y = 0; y < height3; ++y) {
@@ -319,7 +319,8 @@ function isB(x) {
   return x == stateB;
 }
 
-function isSymmetry(isX) {
+// 図形が点対称か否か。
+function isPointSymmetry(isX) {
   let minX = width3;
   let maxX = 0;
   let minY = height3;
@@ -334,9 +335,9 @@ function isSymmetry(isX) {
       }
     }
   }
-  for (let y = 0; y < height3; ++y) {
-    for (let x = 0; x < width3; ++x) {
-      if (isX(blocks[y][x]) && !isX(blocks[maxY - (y - minY)][maxX - (x - minX)])) {
+  for (let y = minY; y <= maxY; ++y) {
+    for (let x = minX; x <= maxX; ++x) {
+      if (isX(blocks[y][x]) && !isX(blocks[minY + maxY - y][minX + maxX - x])) {
         return false;
       }
     }
@@ -344,6 +345,7 @@ function isSymmetry(isX) {
   return true;
 }
 
+// 図形が連結か否か。
 function isConnected(isX) {
   const b = new Array(height3);
   for (let y = 0; y < height3; ++y) {
@@ -389,7 +391,7 @@ function isConnected(isX) {
 }
 
 // 図形(AUB)を点Cで点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
-function symmetrySub(cx, cy) {
+function pointSymmetryAorB(cx, cy) {
   let res = 0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
@@ -415,11 +417,11 @@ function symmetrySub(cx, cy) {
 }
 
 // 図形Bを点((minX + maxX) / 2, (minY + maxY) / 2)で点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
-function symmetrySub2(minX, maxX, minY, maxY) {
+function pointSymmetryB(minX, maxX, minY, maxY) {
   let res = 0;
   for (let y = minY; y <= maxY; ++y) {
     for (let x = minX; x <= maxX; ++x) {
-      if (blocks[maxY - (y - minY)][maxX - (x - minX)] == stateB) {
+      if (blocks[minY + maxY - y][minX + maxX - x] == stateB) {
         switch (blocks[y][x]) {
         case stateNone:
           blocks[y][x] = stateB;
@@ -434,9 +436,10 @@ function symmetrySub2(minX, maxX, minY, maxY) {
   return res;
 }
 
-function isSymmetrySub(cx, cy) {
+// 点(cx, cy)を図形(AUB)の点対称中心とする解が存在するか否か。
+function hasSolution(cx, cy) {
   removeB();
-  if (symmetrySub(cx, cy) <= 0) return false;
+  if (pointSymmetryAorB(cx, cy) <= 0) return false;
 
   let bMinY = height3;
   let bMaxY = 0;
@@ -463,13 +466,13 @@ function isSymmetrySub(cx, cy) {
           removeB();
           let flag = true;
           for (let i = 0; i < maxReflection; i++) {
-            const ret = symmetrySub(cx, cy);
+            const ret = pointSymmetryAorB(cx, cy);
             if (ret == -1) {
               flag = false;
               break;
             }
             if (ret == 0) break;
-            const ret2 = symmetrySub2(minX, maxX, minY, maxY);
+            const ret2 = pointSymmetryB(minX, maxX, minY, maxY);
             if (ret2 == -1) {
               flag = false;
               break;
@@ -479,9 +482,9 @@ function isSymmetrySub(cx, cy) {
           if (!flag) continue;
 
           if (!isConnected(isB)) continue;
-          if (!isSymmetry(isB)) continue;
+          if (!isPointSymmetry(isB)) continue;
           if (!isConnected(isAorB)) continue;
-          if (!isSymmetry(isAorB)) continue;
+          if (!isPointSymmetry(isAorB)) continue;
           return true;
         }
       }
@@ -533,12 +536,12 @@ function update(e) {
   } else if (countA != 0) {
     for (let cy = height * 2; cy <= height * 4; ++cy) {
       for (let cx = width * 2; cx <= width * 4; ++cx) {
-        if (isSymmetrySub(cx, cy)) {
+        if (hasSolution(cx, cy)) {
           points.push({x: cx, y: cy});
         }
       }
     }
-    if (isSymmetry(isA)) {
+    if (isPointSymmetry(isA)) {
       points.push(getCenter(isA));
     }
   }
