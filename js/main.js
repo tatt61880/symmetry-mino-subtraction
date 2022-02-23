@@ -188,6 +188,7 @@ function draw(e) {
     }
   }
 
+  // 横線
   for (let y = 0; y <= height3; ++y) {
     const line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', 0);
@@ -198,6 +199,7 @@ function draw(e) {
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
+  // 縦線
   for (let x = 0; x <= width3; ++x) {
     const line = document.createElementNS(SVG_NS, 'line');
     line.setAttribute('x1', blockSize * x);
@@ -208,25 +210,17 @@ function draw(e) {
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
-  for (let y = 1; y <= 2; ++y) {
-    const line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('x1', blockSize * width);
-    line.setAttribute('x2', blockSize * width * 2);
-    line.setAttribute('y1', blockSize * height * y);
-    line.setAttribute('y2', blockSize * height * y);
-    line.setAttribute('stroke', 'black');
-    line.setAttribute('stroke-dasharray', '2, 2');
-    g.appendChild(line);
-  }
-  for (let x = 1; x <= 2; ++x) {
-    const line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('x1', blockSize * width * x);
-    line.setAttribute('x2', blockSize * width * x);
-    line.setAttribute('y1', blockSize * height);
-    line.setAttribute('y2', blockSize * height * 2);
-    line.setAttribute('stroke', 'black');
-    line.setAttribute('stroke-dasharray', '2, 2');
-    g.appendChild(line);
+  // 中央部
+  {
+    const rect = document.createElementNS(SVG_NS, 'rect');
+    rect.setAttribute('x', blockSize * width);
+    rect.setAttribute('y', blockSize * height);
+    rect.setAttribute('width', blockSize * width);
+    rect.setAttribute('height', blockSize * height);
+    rect.setAttribute('fill', 'none');
+    rect.setAttribute('stroke', 'black');
+    rect.setAttribute('stroke-dasharray', '2, 2');
+    g.appendChild(rect);
   }
 
   for (const point of points) {
