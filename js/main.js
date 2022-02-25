@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.02.23';
+const version = 'Version: 2022.02.25';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -390,10 +390,8 @@ function pointSymmetryAorB(cx, cy) {
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
       if (blocks[y][x] != stateNone) {
-        const ax = 2 * x + 1;
-        const ay = 2 * y + 1;
-        const bx = (2 * cx - ax - 1) / 2;
-        const by = (2 * cy - ay - 1) / 2;
+        const bx = cx - x - 1;
+        const by = cy - y - 1;
         // 処理速度等の都合から、あらかじめ用意したエリア外にはみでる場合は不適切とします。
         if (bx < 0) return -1;
         if (by < 0) return -1;
