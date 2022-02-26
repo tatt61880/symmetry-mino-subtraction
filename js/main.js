@@ -125,9 +125,10 @@ function init(e) {
   applyBlockStr(e, initialBlockStr);
 
   {
-    elemSvg.addEventListener('mousedown', pressOn, false);
-    elemSvg.addEventListener('mousemove', cursorMoved, false);
-    elemSvg.addEventListener('mouseup', pressOff, false);
+    elemSvg.addEventListener('pointerdown', pointerdown, false);
+    elemSvg.addEventListener('pointermove', pointermove, false);
+    elemSvg.addEventListener('pointerup', pointerup, false);
+    document.addEventListener('pointerup', pointerup, false);
 
     elemWidth.value = width;
     elemHeight.value = height;
@@ -252,11 +253,11 @@ function setCurXY(e) {
   curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
 }
 
-function pressOff() {
+function pointerup() {
   pressFlag = false;
 }
 
-function pressOn(e) {
+function pointerdown(e) {
   setCurXY(e);
   if (curX < width) return;
   if (2 * width <= curX) return;
@@ -268,10 +269,10 @@ function pressOn(e) {
   pressFlag = true;
   prevX = -1;
   prevY = -1;
-  cursorMoved(e);
+  pointermove(e);
 }
 
-function cursorMoved(e) {
+function pointermove(e) {
   if (!pressFlag) {
     draw(e);
     return;
