@@ -253,8 +253,7 @@ function setCurXY(e) {
   curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
 }
 
-function pointerup(e) {
-  e.preventDefault();
+function pointerup() {
   pressFlag = false;
 }
 
