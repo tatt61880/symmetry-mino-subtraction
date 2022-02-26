@@ -125,10 +125,10 @@ function init(e) {
   applyBlockStr(e, initialBlockStr);
 
   {
-    elemSvg.addEventListener('pointerdown', pointerdown, false);
-    elemSvg.addEventListener('pointermove', pointermove, false);
-    elemSvg.addEventListener('pointerup', pointerup, false);
-    document.addEventListener('pointerup', pointerup, false);
+    elemSvg.addEventListener('mousedown', pointerdown, false);
+    elemSvg.addEventListener('mousemove', pointermove, false);
+    elemSvg.addEventListener('mouseup', pointerup, false);
+    document.addEventListener('mouseup', pointerup, false);
 
     elemWidth.value = width;
     elemHeight.value = height;
@@ -253,11 +253,13 @@ function setCurXY(e) {
   curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
 }
 
-function pointerup() {
+function pointerup(e) {
+  e.preventDefault();
   pressFlag = false;
 }
 
 function pointerdown(e) {
+  e.preventDefault();
   setCurXY(e);
   if (curX < width) return;
   if (2 * width <= curX) return;
@@ -273,6 +275,7 @@ function pointerdown(e) {
 }
 
 function pointermove(e) {
+  e.preventDefault();
   if (!pressFlag) {
     draw(e);
     return;
