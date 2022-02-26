@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.02.25';
+const version = 'Version: 2022.02.26';
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -384,54 +384,63 @@ function isConnected(isX) {
   return true;
 }
 
-// 図形(AUB)を点Cで点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
-function pointSymmetryAorB(cx, cy) {
-  let res = 0;
+// 図形Aを点(cx, cy)で点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
+function pointSymmetryA(firstB, cx, cy) {
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (blocks[y][x] != stateNone) {
+      if (blocks[y][x] == stateA) {
         const bx = cx - x - 1;
         const by = cy - y - 1;
+
         // 処理速度等の都合から、あらかじめ用意したエリア外にはみでる場合は不適切とします。
-        if (bx < 0) return -1;
-        if (by < 0) return -1;
-        if (bx >= width3) return -1;
-        if (by >= height3) return -1;
+        if (bx < 0) return false;
+        if (by < 0) return false;
+        if (bx >= width3) return false;
+        if (by >= height3) return false;
 
         if (blocks[by][bx] == stateNone) {
           blocks[by][bx] = stateB;
-          res++;
+          firstB.push({x: bx, y: by});
         }
       }
     }
   }
-  return res;
+  return true;
 }
 
-// 図形Bを点((minX + maxX) / 2, (minY + maxY) / 2)で点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
-function pointSymmetryB(minX, maxX, minY, maxY) {
-  let res = 0;
-  for (let y = minY; y <= maxY; ++y) {
-    for (let x = minX; x <= maxX; ++x) {
-      if (blocks[minY + maxY - y][minX + maxX - x] == stateB) {
-        switch (blocks[y][x]) {
-        case stateNone:
-          blocks[y][x] = stateB;
-          res++;
-          break;
-        case stateA:
-          return -1;
-        }
-      }
+// 図形Bに最後に追加された点の配列newBを点(cx, cy)で点対称になるようにしたとき  元の図形と重なっていない部分を図形Bとする。
+function pointSymmetry(newB, cx, cy) {
+  const nextB = [];
+  for (const p of newB) {
+    const bx = cx - p.x - 1;
+    const by = cy - p.y - 1;
+
+    // 処理速度等の都合から、あらかじめ用意したエリア外にはみでる場合は不適切とします。
+    if (bx < 0) return undefined;
+    if (by < 0) return undefined;
+    if (bx >= width3) return undefined;
+    if (by >= height3) return undefined;
+
+    if (blocks[by][bx] == stateNone) {
+      blocks[by][bx] = stateB;
+      nextB.push({x: bx, y: by});
     }
   }
-  return res;
+  return nextB;
+}
+
+function addB(arrB) {
+  for (const p of arrB) {
+    blocks[p.y][p.x] = stateB;
+  }
 }
 
 // 点(cx, cy)を図形(AUB)の点対称中心とする解が存在するか否か。
 function hasSolution(cx, cy) {
   removeB();
-  if (pointSymmetryAorB(cx, cy) <= 0) return false;
+  const firstB = [];
+  if (!pointSymmetryA(firstB, cx, cy)) return false;
+  if (firstB.length == 0) return false;
 
   let bMinY = height3;
   let bMaxY = 0;
@@ -454,22 +463,27 @@ function hasSolution(cx, cy) {
       for (let minX = 0; minX <= bMinX; ++minX) {
         for (let maxX = width3 - 1; maxX >= bMaxX; --maxX) {
           if (minX != 0 && maxX != width3 - 1) break;
+          const cbx = minX + maxX + 1;
+          const cby = minY + maxY + 1;
 
           removeB();
+          addB(firstB);
+          let newB = firstB;
           let flag = true;
           for (let i = 0; i < maxReflection; i++) {
-            const ret = pointSymmetryAorB(cx, cy);
-            if (ret == -1) {
+            newB = pointSymmetry(newB, cbx, cby);
+            if (newB === undefined) {
               flag = false;
               break;
             }
-            if (ret == 0) break;
-            const ret2 = pointSymmetryB(minX, maxX, minY, maxY);
-            if (ret2 == -1) {
+            if (newB.length == 0) break;
+
+            newB = pointSymmetry(newB, cx, cy);
+            if (newB === undefined) {
               flag = false;
               break;
             }
-            if (ret2 == 0) break;
+            if (newB.length == 0) break;
           }
           if (!flag) continue;
 
