@@ -275,7 +275,6 @@ function pointerup() {
 
 function pointerdown(e) {
   if (debug) window.console.log('pointerdown');
-  e.preventDefault();
   setCurXY(e);
   if (curX < width) return;
   if (2 * width <= curX) return;
