@@ -274,12 +274,17 @@ function pointerup() {
 }
 
 function pointerdown(e) {
+  const touches = e.changedTouches;
+  if (touches !== undefined && touches.length > 1) {
+    return;
+  }
   if (debug) window.console.log('pointerdown');
   setCurXY(e);
   if (curX < width) return;
   if (2 * width <= curX) return;
   if (curY < height) return;
   if (2 * height <= curY) return;
+  e.preventDefault();
 
   drawingState = blocks[curY][curX] == stateA ? stateNone : stateA;
 
@@ -301,6 +306,7 @@ function pointermove(e) {
   if (2 * width <= curX) return;
   if (curY < height) return;
   if (2 * height <= curY) return;
+  e.preventDefault();
 
   if (curX == prevX && curY == prevY) return;
   prevX = curX;
