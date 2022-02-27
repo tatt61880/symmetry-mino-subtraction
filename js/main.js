@@ -1,5 +1,7 @@
 'use strict';
-const version = 'Version: 2022.02.26';
+const version = 'Version: 2022.02.27';
+
+const debug = false;
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -125,10 +127,23 @@ function init(e) {
   applyBlockStr(e, initialBlockStr);
 
   {
-    elemSvg.addEventListener('mousedown', pointerdown, false);
-    elemSvg.addEventListener('mousemove', pointermove, false);
-    elemSvg.addEventListener('mouseup', pointerup, false);
-    document.addEventListener('mouseup', pointerup, false);
+    if (typeof window.ontouchstart === 'undefined') {
+      elemSvg.addEventListener('mousedown', pointerdown, false);
+    } else {
+      elemSvg.addEventListener('touchstart', pointerdown, false);
+    }
+    if (typeof window.ontouchmove === 'undefined') {
+      elemSvg.addEventListener('mousemove', pointermove, false);
+    } else {
+      elemSvg.addEventListener('touchmove', pointermove, false);
+    }
+    if (typeof window.ontouchend === 'undefined') {
+      elemSvg.addEventListener('mouseup', pointerup, false);
+      document.addEventListener('mouseup', pointerup, false);
+    } else {
+      elemSvg.addEventListener('touchend', pointerup, false);
+      document.addEventListener('touchend', pointerup, false);
+    }
 
     elemWidth.value = width;
     elemHeight.value = height;
@@ -254,10 +269,12 @@ function setCurXY(e) {
 }
 
 function pointerup() {
+  if (debug) window.console.log('pointerup');
   pressFlag = false;
 }
 
 function pointerdown(e) {
+  if (debug) window.console.log('pointerdown');
   e.preventDefault();
   setCurXY(e);
   if (curX < width) return;
@@ -274,7 +291,7 @@ function pointerdown(e) {
 }
 
 function pointermove(e) {
-  e.preventDefault();
+  if (debug) window.console.log('pointermove');
   if (!pressFlag) {
     draw(e);
     return;
@@ -526,6 +543,7 @@ function count(isX) {
 }
 
 function update(e) {
+  if (debug) window.console.log('update');
   const startTime = Date.now();
   points = [];
   const countA = count(isA);
