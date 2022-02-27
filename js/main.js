@@ -262,10 +262,16 @@ let curY;
 let prevX;
 let prevY;
 let drawingState;
+// 座標をセットする。戻り値は中心付近の枠内か否か。
 function setCurXY(e) {
   const cursorPos = getCursorPos(e);
   curX = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
   curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
+  if (curX < width) return false;
+  if (2 * width <= curX) return false;
+  if (curY < height) return false;
+  if (2 * height <= curY) return false;
+  return true;
 }
 
 function pointerup() {
@@ -279,11 +285,10 @@ function pointerdown(e) {
     return;
   }
   if (debug) window.console.log('pointerdown');
-  setCurXY(e);
-  if (curX < width) return;
-  if (2 * width <= curX) return;
-  if (curY < height) return;
-  if (2 * height <= curY) return;
+  if (!setCurXY(e)) {
+    update(e);
+    return;
+  }
   e.preventDefault();
 
   drawingState = blocks[curY][curX] == stateA ? stateNone : stateA;
@@ -301,11 +306,7 @@ function pointermove(e) {
     return;
   }
 
-  setCurXY(e);
-  if (curX < width) return;
-  if (2 * width <= curX) return;
-  if (curY < height) return;
-  if (2 * height <= curY) return;
+  if (!setCurXY(e)) return;
   e.preventDefault();
 
   if (curX == prevX && curY == prevY) return;
