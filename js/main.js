@@ -286,7 +286,7 @@ function pointerdown(e) {
   }
   if (debug) window.console.log('pointerdown');
   if (!setCurXY(e)) {
-    update(e);
+    draw(e);
     return;
   }
   e.preventDefault();
