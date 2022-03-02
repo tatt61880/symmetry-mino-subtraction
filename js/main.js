@@ -88,7 +88,7 @@ function applyBlockStr(e, str)
       if (y == height * 2) break;
       x = width;
     } else {
-      if (x < width * 2) blocks[y][x] = (c == '1' ? stateA : stateNone);
+      if (x < width * 2) blocks[y][x] = c == '1' ? stateA : stateNone;
       x++;
     }
   }
