@@ -11,7 +11,7 @@ let height = 6;
 let width3;
 let height3;
 let initialBlockStr = '';
-const blockSize = 25;
+const blockSize = 30;
 const maxReflection = 100; // 各中心点で点対称操作を行う回数の上限。
 
 const stateNone = 0;
