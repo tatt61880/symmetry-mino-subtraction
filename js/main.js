@@ -77,7 +77,7 @@ function applyBlockStr(e, str)
   for (let y = 0; y < height3; ++y) {
     blocks[y] = [];
     for (let x = 0; x < width3; ++x) {
-      blocks[y][x] = 0;
+      blocks[y][x] = stateNone;
     }
   }
   let y = height;
@@ -88,7 +88,7 @@ function applyBlockStr(e, str)
       if (y == height * 2) break;
       x = width;
     } else {
-      if (x < width * 2) blocks[y][x] = parseInt(c);
+      if (x < width * 2) blocks[y][x] = (c == '1' ? stateA : stateNone);
       x++;
     }
   }
@@ -191,7 +191,7 @@ function draw(e) {
 
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (blocks[y][x]) {
+      if (blocks[y][x] != stateNone) {
         const rect = document.createElementNS(SVG_NS, 'rect');
         rect.setAttribute('x', blockSize * x);
         rect.setAttribute('y', blockSize * y);
@@ -385,7 +385,7 @@ function isConnected(isX) {
 
   const st = new Stack();
   st.push([x0, y0]);
-  b[y0][x0] = 0;
+  b[y0][x0] = stateNone;
   while (!st.empty()) {
     const xy = st.pop();
     for (let i = 0; i < 4; i++) {
@@ -396,7 +396,7 @@ function isConnected(isX) {
       if (xx == width3) continue;
       if (yy == height3) continue;
       if (isX(b[yy][xx])) {
-        b[yy][xx] = 0;
+        b[yy][xx] = stateNone;
         st.push([xx, yy]);
       }
     }
