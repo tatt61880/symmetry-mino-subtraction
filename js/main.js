@@ -273,7 +273,7 @@ function draw(e) {
       line.setAttribute('y1', 0);
       line.setAttribute('y2', blockSize * height3);
       line.setAttribute('stroke', 'black');
-      line.setAttribute('stroke-dasharray', '1, 3');
+      line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
     }
     // ／
@@ -284,7 +284,7 @@ function draw(e) {
       line.setAttribute('y1', 0);
       line.setAttribute('y2', blockSize * height3);
       line.setAttribute('stroke', 'black');
-      line.setAttribute('stroke-dasharray', '1, 3');
+      line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
     }
   }
