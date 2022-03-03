@@ -152,10 +152,10 @@ function init(e) {
     }
     if (typeof window.ontouchend === 'undefined') {
       elemSvg.addEventListener('mouseup', pointerup, false);
-      document.addEventListener('mouseup', pointerup2, false);
+      document.addEventListener('mouseup', pointerup, false);
     } else {
       elemSvg.addEventListener('touchend', pointerup, false);
-      document.addEventListener('touchend', pointerup2, false);
+      document.addEventListener('touchend', pointerup, false);
     }
 
     elemWidth.value = width;
@@ -322,7 +322,19 @@ function isInsideCenterArea(x, y)
 
 function pointerup(e) {
   if (debug) window.console.log('pointerup');
-  if (sizeMode) {
+
+  pressFlag = false;
+}
+
+function pointerdown(e) {
+  if (debug) window.console.log('pointerdown');
+
+  const touches = e.changedTouches;
+  if (touches !== undefined && touches.length > 1) {
+    return;
+  }
+
+  if (sizeMode) { // サイズ変更モード
     const cursorPos = getCursorPos(e);
     const x = cursorPos.x - 0.5 * blockSize * width3;
     const y = cursorPos.y - 0.5 * blockSize * height3;
@@ -347,21 +359,7 @@ function pointerup(e) {
     draw(e);
     return;
   }
-  pressFlag = false;
-}
 
-function pointerup2() {
-  if (debug) window.console.log('pointerup2');
-  pressFlag = false;
-}
-
-function pointerdown(e) {
-  const touches = e.changedTouches;
-  if (sizeMode) return;
-  if (touches !== undefined && touches.length > 1) {
-    return;
-  }
-  if (debug) window.console.log('pointerdown');
   setCurXY(e);
   if (!isInsideCenterArea(curX, curY)) {
     draw(e);
@@ -378,8 +376,9 @@ function pointerdown(e) {
 }
 
 function pointermove(e) {
-  if (sizeMode) return;
   if (debug) window.console.log('pointermove');
+
+  if (sizeMode) return;
   if (!pressFlag) {
     draw(e);
     return;
@@ -630,6 +629,7 @@ function count(isX) {
 
 function update(e) {
   if (debug) window.console.log('update');
+
   const startTime = Date.now();
   points = [];
   const countA = count(isA);
