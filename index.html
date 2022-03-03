@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
   <title>点対称ポリオミノの引き算</title>
-  <script src="./js/main.js?2022.02.27-g"></script>
+  <script src="./js/main.js?2022.03.04"></script>
+  <link rel="stylesheet" href="./style.css?2022.03.04">
   <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
   <link rel="apple-touch-icon" sizes="152x152" href="./images/apple-touch-icon.png">
 </head>
@@ -10,18 +11,22 @@
 <body id="body" class="text-regular">
   <div style="text-align:center;">
     <p id="version"><br></p>
-    width:<input type="number" id="width" min="3" style="width: 30px;">
-    height:<input type="number" id="height" min="3" style="width: 30px;">
-    <p style="font-size:12px">↑数値が大きいほど処理が重くなります。</p>
-    <svg class="text-normal" style="margin:5px 15px 2px; padding:0px;" id="svgBoard" width="400" height="800"></svg>
+    横:<input type="number" id="width" min="3">
+    縦:<input type="number" id="height" min="3">
+    <a class="button" id="sizeMode">サイズ変更モード</a>
     <p id="text"></p>
+    <svg class="text-normal" style="margin:5px 15px 2px; padding:0px;" id="svgBoard" width="400" height="800"></svg>
     <p id="url" style="font-size:12px"></p>
 
-    <hr>
     <h3>これは何？</h3>
     <p>
     あなたは、濃い点線内にピンク色のポリオミノ(連結でなくても構わない)を描画できます。<br>
     点対称連結ポリオミノ(水色)を足すことで、全体の図形(ピンク+水色)を点対称連結図形にできる場合、その時の中心点を示します。
+    </p>
+    <h3>サイズ変更モードとは？</h3>
+    <p>
+    クリックする位置に応じて、盤面を拡大縮小します。<br>
+    濃い点線内なら値が小さくなり、濃い点線の外ならその方向に大きくなります。
     </p>
   </div>
 </body>

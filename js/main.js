@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.02.27';
+const version = 'Version: 2022.03.04';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -11,7 +11,7 @@ let height = 6;
 let width3;
 let height3;
 let initialBlockStr = '';
-const blockSize = 30;
+const blockSize = 28;
 const maxReflection = 100; // 各中心点で点対称操作を行う回数の上限。
 
 const stateNone = 0;
@@ -24,9 +24,12 @@ const dx = [0, 1, 0, -1];
 let blocks = [];
 let points = [];
 
+let sizeMode = false;
+
 let elemSvg;
 let elemWidth;
 let elemHeight;
+let elemSizeMode;
 let elemText;
 let elemUrl;
 
@@ -72,7 +75,7 @@ function getBlockStr() {
   return res.replace(/-+$/, '');
 }
 
-function applyBlockStr(e, str)
+function applyBlockStr(e, str, dx, dy)
 {
   for (let y = 0; y < height3; ++y) {
     blocks[y] = [];
@@ -80,15 +83,15 @@ function applyBlockStr(e, str)
       blocks[y][x] = stateNone;
     }
   }
-  let y = height;
-  let x = width;
+  let y = height + dy;
+  let x = width + dx;
   for (const c of str) {
     if (c == '-') {
       y++;
       if (y == height * 2) break;
-      x = width;
+      x = width + dx;
     } else {
-      if (x < width * 2) blocks[y][x] = c == '1' ? stateA : stateNone;
+      if (isInsideCenterArea(x, y)) blocks[y][x] = c == '1' ? stateA : stateNone;
       x++;
     }
   }
@@ -111,20 +114,30 @@ function changeSize(e) {
   width = Number(elemWidth.value);
   height = Number(elemHeight.value);
   setSize(width, height);
-  applyBlockStr(e, blockStr);
+  applyBlockStr(e, blockStr, 0, 0);
+}
+
+function toggleSizeMode(e)
+{
+  e.preventDefault();
+  sizeMode = !sizeMode;
+  elemSizeMode.style.backgroundColor = sizeMode ? 'yellow' : 'white';
+
+  draw(e);
 }
 
 function init(e) {
   elemSvg = document.getElementById('svgBoard');
   elemWidth = document.getElementById('width');
   elemHeight = document.getElementById('height');
+  elemSizeMode = document.getElementById('sizeMode');
   elemText = document.getElementById('text');
   elemUrl = document.getElementById('url');
   document.getElementById('version').innerText = version;
 
   analyzeUrl();
   setSize(width, height);
-  applyBlockStr(e, initialBlockStr);
+  applyBlockStr(e, initialBlockStr, 0, 0);
 
   {
     if (typeof window.ontouchstart === 'undefined') {
@@ -139,16 +152,17 @@ function init(e) {
     }
     if (typeof window.ontouchend === 'undefined') {
       elemSvg.addEventListener('mouseup', pointerup, false);
-      document.addEventListener('mouseup', pointerup, false);
+      document.addEventListener('mouseup', pointerup2, false);
     } else {
       elemSvg.addEventListener('touchend', pointerup, false);
-      document.addEventListener('touchend', pointerup, false);
+      document.addEventListener('touchend', pointerup2, false);
     }
 
     elemWidth.value = width;
     elemHeight.value = height;
     elemWidth.addEventListener('change', changeSize, false);
     elemHeight.addEventListener('change', changeSize, false);
+    elemSizeMode.addEventListener('click', toggleSizeMode, false);
   }
 }
 
@@ -173,33 +187,34 @@ function draw(e) {
   const g = document.createElementNS(SVG_NS, 'g');
 
   removeB();
-  let selectedX;
-  let selectedY;
-  if (points.length != 0) {
+  let selectedPos;
+  if (!sizeMode && points.length != 0) {
     const cursorPos = getCursorPos(e);
     let minDist = -1;
     for (const point of points) {
       let dist = (cursorPos.x - point.x * blockSize / 2.0) ** 2 + (cursorPos.y - point.y * blockSize / 2.0) ** 2;
       if (minDist == -1 || dist < minDist) {
         minDist = dist;
-        selectedX = point.x;
-        selectedY = point.y;
+        selectedPos = point;
       }
     }
-    hasSolution(selectedX, selectedY);
+    hasSolution(selectedPos.x, selectedPos.y);
   }
 
-  for (let y = 0; y < height3; ++y) {
-    for (let x = 0; x < width3; ++x) {
-      if (blocks[y][x] != stateNone) {
-        const rect = document.createElementNS(SVG_NS, 'rect');
-        rect.setAttribute('x', blockSize * x);
-        rect.setAttribute('y', blockSize * y);
-        rect.setAttribute('width', blockSize);
-        rect.setAttribute('height', blockSize);
-        rect.setAttribute('fill', blocks[y][x] == stateA ? 'pink' : 'aqua');
-        rect.setAttribute('stroke', 'none');
-        g.appendChild(rect);
+  {
+    const isX = sizeMode ? isA : isAorB;
+    for (let y = 0; y < height3; ++y) {
+      for (let x = 0; x < width3; ++x) {
+        if (isX(blocks[y][x])) {
+          const rect = document.createElementNS(SVG_NS, 'rect');
+          rect.setAttribute('x', blockSize * x);
+          rect.setAttribute('y', blockSize * y);
+          rect.setAttribute('width', blockSize);
+          rect.setAttribute('height', blockSize);
+          rect.setAttribute('fill', blocks[y][x] == stateA ? 'pink' : 'aqua');
+          rect.setAttribute('stroke', 'none');
+          g.appendChild(rect);
+        }
       }
     }
   }
@@ -241,13 +256,39 @@ function draw(e) {
 
   for (const point of points) {
     const circle = document.createElementNS(SVG_NS, 'circle');
-    const isSelected = point.y == selectedY && point.x == selectedX;
+    const isSelected = point === selectedPos;
     circle.setAttribute('cy', blockSize * point.y / 2.0);
     circle.setAttribute('cx', blockSize * point.x / 2.0);
     circle.setAttribute('r', isSelected ? 5.0 : 2.5);
     circle.setAttribute('fill', isSelected ? 'black' : 'red');
     g.appendChild(circle);
   }
+
+  if (sizeMode) {
+    // ＼
+    {
+      const line = document.createElementNS(SVG_NS, 'line');
+      line.setAttribute('x1', 0);
+      line.setAttribute('x2', blockSize * width3);
+      line.setAttribute('y1', 0);
+      line.setAttribute('y2', blockSize * height3);
+      line.setAttribute('stroke', 'black');
+      line.setAttribute('stroke-dasharray', '1, 3');
+      g.appendChild(line);
+    }
+    // ／
+    {
+      const line = document.createElementNS(SVG_NS, 'line');
+      line.setAttribute('x1', blockSize * width3);
+      line.setAttribute('x0', 0);
+      line.setAttribute('y1', 0);
+      line.setAttribute('y2', blockSize * height3);
+      line.setAttribute('stroke', 'black');
+      line.setAttribute('stroke-dasharray', '1, 3');
+      g.appendChild(line);
+    }
+  }
+
   elemSvg.appendChild(g);
 }
 
@@ -267,25 +308,62 @@ function setCurXY(e) {
   const cursorPos = getCursorPos(e);
   curX = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
   curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
-  if (curX < width) return false;
-  if (2 * width <= curX) return false;
-  if (curY < height) return false;
-  if (2 * height <= curY) return false;
   return true;
 }
 
-function pointerup() {
+function isInsideCenterArea(x, y)
+{
+  if (x < width) return false;
+  if (2 * width <= x) return false;
+  if (y < height) return false;
+  if (2 * height <= y) return false;
+  return true;
+}
+
+function pointerup(e) {
   if (debug) window.console.log('pointerup');
+  if (sizeMode) {
+    const cursorPos = getCursorPos(e);
+    const x = cursorPos.x - 0.5 * blockSize * width3;
+    const y = cursorPos.y - 0.5 * blockSize * height3;
+    const blockStr = getBlockStr();
+    let dx = 0;
+    let dy = 0;
+    if (Math.abs(x) / width > Math.abs(y) / height) {
+      const dd = Math.abs(x) > 0.5 * blockSize * width ? 1 : -1;
+      if (width != 1 || dd != -1) {
+        width += dd;
+        if (x < 0) dx += dd;
+      }
+    } else {
+      const dd = Math.abs(y) > 0.5 * blockSize * height ? 1 : -1;
+      if (height != 1 || dd != -1) {
+        height += dd;
+        if (y < 0) dy += dd;
+      }
+    }
+    setSize(width, height);
+    applyBlockStr(e, blockStr, dx, dy);
+    draw(e);
+    return;
+  }
+  pressFlag = false;
+}
+
+function pointerup2() {
+  if (debug) window.console.log('pointerup2');
   pressFlag = false;
 }
 
 function pointerdown(e) {
   const touches = e.changedTouches;
+  if (sizeMode) return;
   if (touches !== undefined && touches.length > 1) {
     return;
   }
   if (debug) window.console.log('pointerdown');
-  if (!setCurXY(e)) {
+  setCurXY(e);
+  if (!isInsideCenterArea(curX, curY)) {
     draw(e);
     return;
   }
@@ -300,13 +378,15 @@ function pointerdown(e) {
 }
 
 function pointermove(e) {
+  if (sizeMode) return;
   if (debug) window.console.log('pointermove');
   if (!pressFlag) {
     draw(e);
     return;
   }
 
-  if (!setCurXY(e)) return;
+  setCurXY(e);
+  if (!isInsideCenterArea(curX, curY)) return;
   e.preventDefault();
 
   if (curX == prevX && curY == prevY) return;
