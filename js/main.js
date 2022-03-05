@@ -107,6 +107,8 @@ function setSize(w, h) {
   height3 = h * 3;
   elemSvg.setAttribute('width', width3 * blockSize);
   elemSvg.setAttribute('height', height3 * blockSize);
+  elemWidth.value = width;
+  elemHeight.value = height;
 }
 
 function changeSize(e) {
@@ -158,8 +160,6 @@ function init(e) {
       document.addEventListener('touchend', pointerup, false);
     }
 
-    elemWidth.value = width;
-    elemHeight.value = height;
     elemWidth.addEventListener('change', changeSize, false);
     elemHeight.addEventListener('change', changeSize, false);
     elemSizeMode.addEventListener('click', toggleSizeMode, false);
