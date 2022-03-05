@@ -362,7 +362,7 @@ function isInsideCenterArea(x, y)
   return true;
 }
 
-function pointerup(e) {
+function pointerup() {
   if (debug) window.console.log('pointerup');
 
   pressFlag = false;
