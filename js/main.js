@@ -399,6 +399,7 @@ function pointerdown(e) {
         if (y < 0) dy += dd;
       }
     }
+    e.preventDefault();
     setSize(width, height);
     applyBlockStr(e, blockStr, dx, dy);
     draw(e);
