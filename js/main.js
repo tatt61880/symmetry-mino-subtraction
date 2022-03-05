@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.04';
+const version = 'Version: 2022.03.05';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -202,6 +202,16 @@ function draw(e) {
   }
 
   {
+    {
+      const rect = document.createElementNS(SVG_NS, 'rect');
+      rect.setAttribute('x', 0);
+      rect.setAttribute('y', 0);
+      rect.setAttribute('width', blockSize * width3);
+      rect.setAttribute('height', blockSize * height3);
+      rect.setAttribute('fill', 'white');
+      rect.setAttribute('stroke', 'none');
+      g.appendChild(rect);
+    }
     const isX = sizeMode ? isA : isAorB;
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
