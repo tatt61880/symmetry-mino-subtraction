@@ -18,6 +18,12 @@ const stateNone = 0;
 const stateA = 1;
 const stateB = 2;
 
+const colorNone = 'white';
+const colorA = 'pink';
+const colorB = 'aqua';
+const colorNormalMode = 'white';
+const colorSizeMode = '#ffffaa';
+
 const dy = [1, 0, -1, 0];
 const dx = [0, 1, 0, -1];
 
@@ -119,11 +125,22 @@ function changeSize(e) {
   applyBlockStr(e, blockStr, 0, 0);
 }
 
+function updateSizeModeButton()
+{
+  if (sizeMode) {
+    elemSizeMode.style.backgroundColor = colorSizeMode;
+    elemSizeMode.innerText = 'サイズ変更モードを無効にする';
+  } else {
+    elemSizeMode.style.backgroundColor = colorNormalMode;
+    elemSizeMode.innerText = 'サイズ変更モードを有効にする';
+  }
+}
+
 function toggleSizeMode(e)
 {
   e.preventDefault();
   sizeMode = !sizeMode;
-  elemSizeMode.style.backgroundColor = sizeMode ? 'yellow' : 'white';
+  updateSizeModeButton();
 
   draw(e);
 }
@@ -163,6 +180,7 @@ function init(e) {
     elemWidth.addEventListener('change', changeSize, false);
     elemHeight.addEventListener('change', changeSize, false);
     elemSizeMode.addEventListener('click', toggleSizeMode, false);
+    updateSizeModeButton();
   }
 }
 
@@ -186,6 +204,7 @@ function draw(e) {
   }
   const g = document.createElementNS(SVG_NS, 'g');
 
+  // ポインタの位置に応じて図形Bをセットし直す。
   removeB();
   let selectedPos;
   if (!sizeMode && points.length != 0) {
@@ -201,6 +220,7 @@ function draw(e) {
     hasSolution(selectedPos.x, selectedPos.y);
   }
 
+  // 図形の描画
   {
     {
       const rect = document.createElementNS(SVG_NS, 'rect');
@@ -208,10 +228,21 @@ function draw(e) {
       rect.setAttribute('y', 0);
       rect.setAttribute('width', blockSize * width3);
       rect.setAttribute('height', blockSize * height3);
-      rect.setAttribute('fill', 'white');
+      rect.setAttribute('fill', colorNone);
       rect.setAttribute('stroke', 'none');
       g.appendChild(rect);
     }
+    if (sizeMode) {
+      const polygon = document.createElementNS(SVG_NS, 'polygon');
+      const cx = 3 * blockSize * width / 2;
+      const cy = 3 * blockSize * height / 2;
+      polygon.setAttribute('points', `${cx},${cy + blockSize * height} ${cx + blockSize * width},${cy} ${cx},${cy - blockSize * height} ${cx - blockSize * width},${cy}`);
+      polygon.setAttribute('fill', colorSizeMode);
+      polygon.setAttribute('stroke', 'black');
+      polygon.setAttribute('stroke-dasharray', '2, 2');
+      g.appendChild(polygon);
+    }
+
     const isX = sizeMode ? isA : isAorB;
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
@@ -221,7 +252,7 @@ function draw(e) {
           rect.setAttribute('y', blockSize * y);
           rect.setAttribute('width', blockSize);
           rect.setAttribute('height', blockSize);
-          rect.setAttribute('fill', blocks[y][x] == stateA ? 'pink' : 'aqua');
+          rect.setAttribute('fill', blocks[y][x] == stateA ? colorA : colorB);
           rect.setAttribute('stroke', 'none');
           g.appendChild(rect);
         }
@@ -264,6 +295,7 @@ function draw(e) {
     g.appendChild(rect);
   }
 
+  // 点
   for (const point of points) {
     const circle = document.createElementNS(SVG_NS, 'circle');
     const isSelected = point === selectedPos;
@@ -278,10 +310,10 @@ function draw(e) {
     // ＼
     {
       const line = document.createElementNS(SVG_NS, 'line');
-      line.setAttribute('x1', 0);
-      line.setAttribute('x2', blockSize * width3);
-      line.setAttribute('y1', 0);
-      line.setAttribute('y2', blockSize * height3);
+      line.setAttribute('x1', blockSize * width);
+      line.setAttribute('x2', blockSize * width * 2);
+      line.setAttribute('y1', blockSize * height);
+      line.setAttribute('y2', blockSize * height * 2);
       line.setAttribute('stroke', 'black');
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
@@ -289,10 +321,10 @@ function draw(e) {
     // ／
     {
       const line = document.createElementNS(SVG_NS, 'line');
-      line.setAttribute('x1', blockSize * width3);
-      line.setAttribute('x0', 0);
-      line.setAttribute('y1', 0);
-      line.setAttribute('y2', blockSize * height3);
+      line.setAttribute('x1', blockSize * width * 2);
+      line.setAttribute('x2', blockSize * width);
+      line.setAttribute('y1', blockSize * height);
+      line.setAttribute('y2', blockSize * height * 2);
       line.setAttribute('stroke', 'black');
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
@@ -351,6 +383,9 @@ function pointerdown(e) {
     const blockStr = getBlockStr();
     let dx = 0;
     let dy = 0;
+    if (Math.abs(x) / width + Math.abs(y) / height > blockSize) {
+      return;
+    }
     if (Math.abs(x) / width > Math.abs(y) / height) {
       const dd = Math.abs(x) > 0.5 * blockSize * width ? 1 : -1;
       if (width != 1 || dd != -1) {
