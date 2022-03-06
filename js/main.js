@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.05';
+const version = 'Version: 2022.03.06';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -593,10 +593,10 @@ function hasSolution(cx, cy) {
   if (!pointSymmetryA(firstB, cx, cy)) return false;
   if (firstB.length == 0) return false;
 
-  let bMinY = height3;
-  let bMaxY = 0;
   let bMinX = width3;
   let bMaxX = 0;
+  let bMinY = height3;
+  let bMaxY = 0;
   for (const p of firstB) {
     bMinX = Math.min(bMinX, p.x);
     bMaxX = Math.max(bMaxX, p.x);
@@ -604,43 +604,34 @@ function hasSolution(cx, cy) {
     bMaxY = Math.max(bMaxY, p.y);
   }
 
-  for (let minY = 0; minY <= bMinY; ++minY) {
-    for (let maxY = height3 - 1; maxY >= bMaxY; --maxY) {
-      if (minY != 0 && maxY != height3 - 1) break;
-      for (let minX = 0; minX <= bMinX; ++minX) {
-        for (let maxX = width3 - 1; maxX >= bMaxX; --maxX) {
-          if (minX != 0 && maxX != width3 - 1) break;
-          const cbx = minX + maxX + 1;
-          const cby = minY + maxY + 1;
-
-          removeB();
-          addB(firstB);
-          let newB = firstB;
-          let flag = true;
-          for (let i = 0; i < maxReflection; i++) {
-            newB = pointSymmetry(newB, cbx, cby);
-            if (newB === undefined) {
-              flag = false;
-              break;
-            }
-            if (newB.length == 0) break;
-
-            newB = pointSymmetry(newB, cx, cy);
-            if (newB === undefined) {
-              flag = false;
-              break;
-            }
-            if (newB.length == 0) break;
-          }
-          if (!flag) continue;
-
-          if (!isConnected(isB)) continue;
-          if (!isPointSymmetry(isB)) continue;
-          if (!isConnected(isAorB)) continue;
-          if (!isPointSymmetry(isAorB)) continue;
-          return true;
+  for (let cby = bMaxY + 1; cby <= bMinY + height3; ++cby) {
+    for (let cbx = bMaxX + 1; cbx <= bMinX + width3; ++cbx) {
+      removeB();
+      addB(firstB);
+      let newB = firstB;
+      let flag = true;
+      for (let i = 0; i < maxReflection; i++) {
+        newB = pointSymmetry(newB, cbx, cby);
+        if (newB === undefined) {
+          flag = false;
+          break;
         }
+        if (newB.length == 0) break;
+
+        newB = pointSymmetry(newB, cx, cy);
+        if (newB === undefined) {
+          flag = false;
+          break;
+        }
+        if (newB.length == 0) break;
       }
+      if (!flag) continue;
+
+      if (!isConnected(isB)) continue;
+      if (!isPointSymmetry(isB)) continue;
+      if (!isConnected(isAorB)) continue;
+      if (!isPointSymmetry(isAorB)) continue;
+      return true;
     }
   }
 }
