@@ -560,7 +560,7 @@ function pointSymmetryA(firstB, cx, cy) {
 }
 
 // 図形Bに最後に追加された点の配列newBを点(cx, cy)で点対称になるようにしたとき  元の図形と重なっていない部分を図形Bとする。
-function pointSymmetry(newB, cx, cy) {
+function pointSymmetry(newB, cx, cy, checkFlag) {
   const nextB = [];
   for (const p of newB) {
     const bx = cx - p.x - 1;
@@ -572,9 +572,14 @@ function pointSymmetry(newB, cx, cy) {
     if (bx >= width3) return undefined;
     if (by >= height3) return undefined;
 
-    if (blocks[by][bx] == stateNone) {
-      blocks[by][bx] = stateB;
-      nextB.push({x: bx, y: by});
+    switch (blocks[by][bx]) {
+      case stateNone:
+        blocks[by][bx] = stateB;
+        nextB.push({x: bx, y: by});
+        break;
+      case stateA:
+        if (checkFlag) return undefined;
+        break;
     }
   }
   return nextB;
@@ -611,14 +616,14 @@ function hasSolution(cx, cy) {
       let newB = firstB;
       let flag = true;
       for (let i = 0; i < maxReflection; i++) {
-        newB = pointSymmetry(newB, cbx, cby);
+        newB = pointSymmetry(newB, cbx, cby, true);
         if (newB === undefined) {
           flag = false;
           break;
         }
         if (newB.length == 0) break;
 
-        newB = pointSymmetry(newB, cx, cy);
+        newB = pointSymmetry(newB, cx, cy, false);
         if (newB === undefined) {
           flag = false;
           break;
