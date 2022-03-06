@@ -375,17 +375,18 @@ function pointerdown(e) {
   if (touches !== undefined && touches.length > 1) {
     return;
   }
+  e.preventDefault();
 
   if (sizeMode) { // サイズ変更モード
     const cursorPos = getCursorPos(e);
     const x = cursorPos.x - 0.5 * blockSize * width3;
     const y = cursorPos.y - 0.5 * blockSize * height3;
-    const blockStr = getBlockStr();
-    let dx = 0;
-    let dy = 0;
     if (Math.abs(x) / width + Math.abs(y) / height > blockSize) {
       return;
     }
+    const blockStr = getBlockStr();
+    let dx = 0;
+    let dy = 0;
     if (Math.abs(x) / width > Math.abs(y) / height) {
       const dd = Math.abs(x) > 0.5 * blockSize * width ? 1 : -1;
       if (width != 1 || dd != -1) {
@@ -411,7 +412,6 @@ function pointerdown(e) {
     draw(e);
     return;
   }
-  e.preventDefault();
 
   drawingState = blocks[curY][curX] == stateA ? stateNone : stateA;
 
