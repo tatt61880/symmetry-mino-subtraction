@@ -575,13 +575,13 @@ function pointSymmetry(newB, cx, cy, checkFlag) {
     if (by >= height3) return undefined;
 
     switch (blocks[by][bx]) {
-      case stateNone:
-        blocks[by][bx] = stateB;
-        nextB.push({x: bx, y: by});
-        break;
-      case stateA:
-        if (checkFlag) return undefined;
-        break;
+    case stateNone:
+      blocks[by][bx] = stateB;
+      nextB.push({x: bx, y: by});
+      break;
+    case stateA:
+      if (checkFlag) return undefined;
+      break;
     }
   }
   return nextB;
@@ -691,7 +691,10 @@ function update(e) {
   points = [];
   const centerOfA = getCenter(isA);
   const countA = count(isA);
-  if (countA == 1) {
+  switch (countA) {
+  case 0:
+    break;
+  case 1:
     for (let cy = height * 2; cy <= height * 4; ++cy) {
       for (let cx = width * 2; cx <= width * 4; ++cx) {
         if (cx == centerOfA.x || cy == centerOfA.y) {
@@ -699,7 +702,8 @@ function update(e) {
         }
       }
     }
-  } else if (countA != 0) {
+    break;
+  default:
     for (let cy = height * 2; cy <= height * 4; ++cy) {
       for (let cx = width * 2; cx <= width * 4; ++cx) {
         const isCenterOfA = cx == centerOfA.x && cy == centerOfA.y;
@@ -708,6 +712,7 @@ function update(e) {
         }
       }
     }
+    break;
   }
   const endTime = Date.now();
   setText(`処理時間: ${endTime - startTime}ms`);
