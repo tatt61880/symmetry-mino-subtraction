@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.06';
+const version = 'Version: 2022.03.08';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -159,17 +159,17 @@ function init(e) {
   applyBlockStr(e, initialBlockStr, 0, 0);
 
   {
-    if (typeof window.ontouchstart === 'undefined') {
+    if (window.ontouchstart === undefined) {
       elemSvg.addEventListener('mousedown', pointerdown, false);
     } else {
       elemSvg.addEventListener('touchstart', pointerdown, false);
     }
-    if (typeof window.ontouchmove === 'undefined') {
+    if (window.ontouchmove === undefined) {
       elemSvg.addEventListener('mousemove', pointermove, false);
     } else {
       elemSvg.addEventListener('touchmove', pointermove, false);
     }
-    if (typeof window.ontouchend === 'undefined') {
+    if (window.ontouchend === undefined) {
       elemSvg.addEventListener('mouseup', pointerup, false);
       document.addEventListener('mouseup', pointerup, false);
     } else {
@@ -188,7 +188,7 @@ function getCursorPos(e) {
   const bcRect = elemSvg.getBoundingClientRect();
   let cursorX;
   let cursorY;
-  if (typeof e.touches !== 'undefined') {
+  if (e.touches !== undefined) {
     cursorX = e.touches[0].clientX - bcRect.left;
     cursorY = e.touches[0].clientY - bcRect.top;
   } else {
@@ -217,7 +217,9 @@ function draw(e) {
         selectedPos = point;
       }
     }
-    hasSolution(selectedPos.x, selectedPos.y);
+    const centerOfA = getCenter(isA);
+    const isCenterOfA = selectedPos.x == centerOfA.x && selectedPos.y == centerOfA.y;
+    hasSolution(selectedPos.x, selectedPos.y, isCenterOfA);
   }
 
   // 図形の描画
@@ -345,14 +347,14 @@ let curY;
 let prevX;
 let prevY;
 let drawingState;
-// 座標をセットする。戻り値は中心付近の枠内か否か。
+// 座標をセットする。
 function setCurXY(e) {
   const cursorPos = getCursorPos(e);
   curX = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
   curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
-  return true;
 }
 
+// 中心付近の枠内およびその周上か否か。
 function isInsideCenterArea(x, y)
 {
   if (x < width) return false;
@@ -591,12 +593,29 @@ function addB(arrB) {
   }
 }
 
+// 解として正しいか。
+function isOk() {
+  if (!isConnected(isB)) return false;
+  if (!isPointSymmetry(isB)) return false;
+  if (!isConnected(isAorB)) return false;
+  if (!isPointSymmetry(isAorB)) return false;
+  return true;
+}
+
 // 点(cx, cy)を図形(AUB)の点対称中心とする解が存在するか否か。
-function hasSolution(cx, cy) {
+function hasSolution(cx, cy, isCenterOfA) {
   removeB();
   const firstB = [];
   if (!pointSymmetryA(firstB, cx, cy)) return false;
-  if (firstB.length == 0) return false;
+  if (isCenterOfA) {
+    if (firstB.length == 0) {
+      if (isPointSymmetry(isA)) return true;
+    } else {
+      if (isOk()) return true;
+    }
+  } else {
+    if (firstB.length == 0) return false;
+  }
 
   let bMinX = width3;
   let bMaxX = 0;
@@ -631,11 +650,7 @@ function hasSolution(cx, cy) {
         if (newB.length == 0) break;
       }
       if (!flag) continue;
-
-      if (!isConnected(isB)) continue;
-      if (!isPointSymmetry(isB)) continue;
-      if (!isConnected(isAorB)) continue;
-      if (!isPointSymmetry(isAorB)) continue;
+      if (!isOk()) continue;
       return true;
     }
   }
@@ -674,26 +689,24 @@ function update(e) {
 
   const startTime = Date.now();
   points = [];
+  const centerOfA = getCenter(isA);
   const countA = count(isA);
   if (countA == 1) {
-    const cp = getCenter(isA);
     for (let cy = height * 2; cy <= height * 4; ++cy) {
       for (let cx = width * 2; cx <= width * 4; ++cx) {
-        if (cp.x == cx || cp.y == cy) {
-          points.push({y: cy, x: cx});
+        if (cx == centerOfA.x || cy == centerOfA.y) {
+          points.push({x: cx, y: cy});
         }
       }
     }
   } else if (countA != 0) {
     for (let cy = height * 2; cy <= height * 4; ++cy) {
       for (let cx = width * 2; cx <= width * 4; ++cx) {
-        if (hasSolution(cx, cy)) {
+        const isCenterOfA = cx == centerOfA.x && cy == centerOfA.y;
+        if (hasSolution(cx, cy, isCenterOfA)) {
           points.push({x: cx, y: cy});
         }
       }
-    }
-    if (isPointSymmetry(isA)) {
-      points.push(getCenter(isA));
     }
   }
   const endTime = Date.now();
