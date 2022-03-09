@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.08';
+const version = 'Version: 2022.03.10';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -207,6 +207,7 @@ function draw(e) {
   // ポインタの位置に応じて図形Bをセットし直す。
   removeB();
   let selectedPos;
+  let centerOfB = undefined;
   if (!sizeMode && points.length != 0) {
     const cursorPos = getCursorPos(e);
     let minDist = -1;
@@ -220,6 +221,9 @@ function draw(e) {
     const centerOfA = getCenter(isA);
     const isCenterOfA = selectedPos.x == centerOfA.x && selectedPos.y == centerOfA.y;
     hasSolution(selectedPos.x, selectedPos.y, isCenterOfA);
+    if (count(isB)) {
+      centerOfB = getCenter(isB);
+    }
   }
 
   // 図形の描画
@@ -303,8 +307,18 @@ function draw(e) {
     const isSelected = point === selectedPos;
     circle.setAttribute('cy', blockSize * point.y / 2.0);
     circle.setAttribute('cx', blockSize * point.x / 2.0);
-    circle.setAttribute('r', isSelected ? 5.0 : 2.5);
-    circle.setAttribute('fill', isSelected ? 'black' : 'red');
+    circle.setAttribute('r', isSelected ? 7 : 3);
+    circle.setAttribute('fill', isSelected ? 'darkviolet' : 'red');
+    g.appendChild(circle);
+  }
+
+  if (centerOfB !== undefined) {
+    const circle = document.createElementNS(SVG_NS, 'circle');
+    circle.setAttribute('cy', blockSize * centerOfB.y / 2.0);
+    circle.setAttribute('cx', blockSize * centerOfB.x / 2.0);
+    circle.setAttribute('r', 5);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', 'blue');
     g.appendChild(circle);
   }
 
