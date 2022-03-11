@@ -39,6 +39,12 @@ let elemSizeMode;
 let elemText;
 let elemUrl;
 
+let curX;
+let curY;
+let prevX;
+let prevY;
+let drawingState;
+
 function analyzeUrl() {
   let paravalsStr = location.href.split('?')[1];
   if (paravalsStr == null) paravalsStr = '';
@@ -305,8 +311,8 @@ function draw(e) {
   for (const point of points) {
     const circle = document.createElementNS(SVG_NS, 'circle');
     const isSelected = point === selectedPos;
-    circle.setAttribute('cy', blockSize * point.y / 2.0);
     circle.setAttribute('cx', blockSize * point.x / 2.0);
+    circle.setAttribute('cy', blockSize * point.y / 2.0);
     circle.setAttribute('r', isSelected ? 7 : 3);
     circle.setAttribute('fill', isSelected ? 'darkviolet' : 'red');
     g.appendChild(circle);
@@ -314,8 +320,8 @@ function draw(e) {
 
   if (centerOfB !== undefined) {
     const circle = document.createElementNS(SVG_NS, 'circle');
-    circle.setAttribute('cy', blockSize * centerOfB.y / 2.0);
     circle.setAttribute('cx', blockSize * centerOfB.x / 2.0);
+    circle.setAttribute('cy', blockSize * centerOfB.y / 2.0);
     circle.setAttribute('r', 5);
     circle.setAttribute('fill', 'none');
     circle.setAttribute('stroke', 'blue');
@@ -356,11 +362,6 @@ function clamp(val, min, max) {
   return val;
 }
 
-let curX;
-let curY;
-let prevX;
-let prevY;
-let drawingState;
 // 座標をセットする。
 function setCurXY(e) {
   const cursorPos = getCursorPos(e);
