@@ -5,7 +5,7 @@ const debug = false;
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-let pressFlag = false;
+let drawingFlag = false;
 let width = 6;
 let height = 6;
 let width3;
@@ -382,7 +382,7 @@ function isInsideCenterArea(x, y)
 function pointerup() {
   if (debug) window.console.log('pointerup');
 
-  pressFlag = false;
+  drawingFlag = false;
 }
 
 function pointerdown(e) {
@@ -431,8 +431,8 @@ function pointerdown(e) {
   }
 
   drawingState = blocks[curY][curX] == stateA ? stateNone : stateA;
+  drawingFlag = true;
 
-  pressFlag = true;
   prevX = -1;
   prevY = -1;
   pointermove(e);
@@ -442,7 +442,7 @@ function pointermove(e) {
   if (debug) window.console.log('pointermove');
 
   if (sizeMode) return;
-  if (!pressFlag) {
+  if (!drawingFlag) {
     draw(e);
     return;
   }
