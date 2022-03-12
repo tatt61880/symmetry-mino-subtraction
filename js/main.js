@@ -651,7 +651,7 @@ function hasSolution(cx, cy, isCenterOfA) {
       addB(firstB);
       let newB = firstB;
       let flag = true;
-      while (true) {
+      for (;;) {
         newB = pointSymmetry(newB, cbx, cby, true);
         if (newB === undefined) {
           flag = false;
