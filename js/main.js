@@ -46,21 +46,22 @@ let prevY;
 let drawingState;
 
 function analyzeUrl() {
-  const paravalsStr = location.href.split('?')[1];
-  if (paravalsStr == null) return;
-  const paravalsArray = paravalsStr.split('&');
-  for (const paravals of paravalsArray) {
-    const paraval = paravals.split('=');
-    if (paraval.length != 2) continue;
-    switch (paraval[0]) {
+  const queryStrs = location.href.split('?')[1];
+  if (queryStrs == null) return;
+  for (const queryStr of queryStrs.split('&')) {
+    const paramArray = queryStr.split('=');
+    if (paramArray.length != 2) continue;
+    const paramName = paramArray[0];
+    const paramVal = paramArray[1];
+    switch (paramName) {
     case 'w':
-      width = Number(paraval[1]);
+      width = Number(paramVal);
       break;
     case 'h':
-      height = Number(paraval[1]);
+      height = Number(paramVal);
       break;
     case 's':
-      initialBlockStr = paraval[1];
+      initialBlockStr = paramVal;
       break;
     }
   }
