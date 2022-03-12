@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.10';
+const version = 'Version: 2022.03.12';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -12,7 +12,6 @@ let width3;
 let height3;
 let initialBlockStr = '';
 const blockSize = 28;
-const maxReflection = 100; // 各中心点で点対称操作を行う回数の上限。
 
 const stateNone = 0;
 const stateA = 1;
@@ -35,9 +34,9 @@ let sizeMode = false;
 let elemSvg;
 let elemWidth;
 let elemHeight;
-let elemSizeMode;
-let elemText;
-let elemUrl;
+let elemSizeModeButton;
+let elemProcessTimeInfo;
+let elemUrlInfo;
 
 let curX;
 let curY;
@@ -46,8 +45,13 @@ let prevY;
 let drawingState;
 
 function analyzeUrl() {
+  const res = {
+    width: width, 
+    height: height,
+    blockStr: ''
+  };
   const queryStrs = location.href.split('?')[1];
-  if (queryStrs == null) return;
+  if (queryStrs == null) return res;
   for (const queryStr of queryStrs.split('&')) {
     const paramArray = queryStr.split('=');
     if (paramArray.length != 2) continue;
@@ -55,21 +59,22 @@ function analyzeUrl() {
     const paramVal = paramArray[1];
     switch (paramName) {
     case 'w':
-      width = Number(paramVal);
+      res.width = Number(paramVal);
       break;
     case 'h':
-      height = Number(paramVal);
+      res.height = Number(paramVal);
       break;
     case 's':
-      initialBlockStr = paramVal;
+      res.blockStr = paramVal;
       break;
     }
   }
+  return res;
 }
 
-function writeUrlInfo() {
+function updateUrlInfo() {
   const url = location.href.split('?')[0] + `?w=${width}&h=${height}&s=${getBlockStr()}`;
-  elemUrl.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
+  elemUrlInfo.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
 }
 
 function getBlockStr() {
@@ -108,35 +113,33 @@ function applyBlockStr(e, str, dx, dy)
   update(e);
 }
 
-function setText(str) {
-  elemText.innerText = str;
-}
-
 function setSize(w, h) {
+  width = w;
+  height = h;
   width3 = w * 3;
   height3 = h * 3;
   elemSvg.setAttribute('width', width3 * blockSize);
   elemSvg.setAttribute('height', height3 * blockSize);
-  elemWidth.value = width;
-  elemHeight.value = height;
+  elemWidth.value = w;
+  elemHeight.value = h;
 }
 
 function changeSize(e) {
   const blockStr = getBlockStr();
-  width = Number(elemWidth.value);
-  height = Number(elemHeight.value);
-  setSize(width, height);
+  const w = Number(elemWidth.value);
+  const h = Number(elemHeight.value);
+  setSize(w, h);
   applyBlockStr(e, blockStr, 0, 0);
 }
 
 function updateSizeModeButton()
 {
   if (sizeMode) {
-    elemSizeMode.style.backgroundColor = colorSizeMode;
-    elemSizeMode.innerText = 'サイズ変更モードを無効にする';
+    elemSizeModeButton.style.backgroundColor = colorSizeMode;
+    elemSizeModeButton.innerText = 'サイズ変更モードを無効にする';
   } else {
-    elemSizeMode.style.backgroundColor = colorNormalMode;
-    elemSizeMode.innerText = 'サイズ変更モードを有効にする';
+    elemSizeModeButton.style.backgroundColor = colorNormalMode;
+    elemSizeModeButton.innerText = 'サイズ変更モードを有効にする';
   }
 }
 
@@ -151,16 +154,16 @@ function toggleSizeMode(e)
 
 function init(e) {
   elemSvg = document.getElementById('svgBoard');
-  elemWidth = document.getElementById('width');
-  elemHeight = document.getElementById('height');
-  elemSizeMode = document.getElementById('sizeMode');
-  elemText = document.getElementById('text');
-  elemUrl = document.getElementById('url');
-  document.getElementById('version').innerText = version;
+  elemWidth = document.getElementById('widthVal');
+  elemHeight = document.getElementById('heightVal');
+  elemSizeModeButton = document.getElementById('sizeModeButton');
+  elemProcessTimeInfo = document.getElementById('processTimeInfo');
+  elemUrlInfo = document.getElementById('urlInfo');
+  document.getElementById('versionInfo').innerText = version;
 
-  analyzeUrl();
-  setSize(width, height);
-  applyBlockStr(e, initialBlockStr, 0, 0);
+  const res = analyzeUrl();
+  setSize(res.width, res.height);
+  applyBlockStr(e, res.blockStr, 0, 0);
 
   {
     if (window.ontouchstart === undefined) {
@@ -183,7 +186,7 @@ function init(e) {
 
     elemWidth.addEventListener('change', changeSize, false);
     elemHeight.addEventListener('change', changeSize, false);
-    elemSizeMode.addEventListener('click', toggleSizeMode, false);
+    elemSizeModeButton.addEventListener('click', toggleSizeMode, false);
     updateSizeModeButton();
   }
 }
@@ -402,21 +405,23 @@ function pointerdown(e) {
     const blockStr = getBlockStr();
     let dx = 0;
     let dy = 0;
+    let newWidth = width;
+    let newHeight = height;
     if (Math.abs(x) / width > Math.abs(y) / height) {
       const dd = Math.abs(x) > 0.5 * blockSize * width ? 1 : -1;
       if (width != 1 || dd != -1) {
-        width += dd;
+        newWidth += dd;
         if (x < 0) dx += dd;
       }
     } else {
       const dd = Math.abs(y) > 0.5 * blockSize * height ? 1 : -1;
       if (height != 1 || dd != -1) {
-        height += dd;
+        newHeight += dd;
         if (y < 0) dy += dd;
       }
     }
     e.preventDefault();
-    setSize(width, height);
+    setSize(newWidth, newHeight);
     applyBlockStr(e, blockStr, dx, dy);
     draw(e);
     return;
@@ -455,16 +460,6 @@ function pointermove(e) {
   blocks[curY][curX] = drawingState;
 
   update(e);
-}
-
-function removeB() {
-  for (let y = 0; y < height3; ++y) {
-    for (let x = 0; x < width3; ++x) {
-      if (blocks[y][x] == stateB) {
-        blocks[y][x] = stateNone;
-      }
-    }
-  }
 }
 
 function isAorB(x) {
@@ -600,6 +595,16 @@ function pointSymmetry(newB, cx, cy, checkFlag) {
   return nextB;
 }
 
+function removeB() {
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
+      if (blocks[y][x] == stateB) {
+        blocks[y][x] = stateNone;
+      }
+    }
+  }
+}
+
 function addB(arrB) {
   for (const p of arrB) {
     blocks[p.y][p.x] = stateB;
@@ -647,7 +652,7 @@ function hasSolution(cx, cy, isCenterOfA) {
       addB(firstB);
       let newB = firstB;
       let flag = true;
-      for (let i = 0; i < maxReflection; i++) {
+      while (true) {
         newB = pointSymmetry(newB, cbx, cby, true);
         if (newB === undefined) {
           flag = false;
@@ -728,8 +733,8 @@ function update(e) {
     break;
   }
   const endTime = Date.now();
-  setText(`処理時間: ${endTime - startTime}ms`);
-  writeUrlInfo();
+  elemProcessTimeInfo.innerText = `処理時間: ${endTime - startTime}ms`;
+  updateUrlInfo();
   draw(e);
 }
 

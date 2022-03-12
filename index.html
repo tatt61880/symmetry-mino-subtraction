@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <title>点対称ポリオミノの引き算</title>
-  <script src="./js/main.js?2022.03.10"></script>
+  <script src="./js/main.js?2022.03.12"></script>
   <link rel="stylesheet" href="./style.css?2022.03.06">
   <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
   <link rel="apple-touch-icon" sizes="152x152" href="./images/apple-touch-icon.png?2022.03.12">
@@ -11,13 +11,13 @@
 
 <body id="body" class="text-regular">
   <div style="text-align:center;">
-    <p id="version"><br></p>
-    横:<input type="number" id="width" min="3">
-    縦:<input type="number" id="height" min="3">
-    <a class="button" id="sizeMode">サイズ変更モード</a>
-    <p id="text"></p>
-    <svg class="text-normal" id="svgBoard" width="500" height="500"></svg>
-    <p id="url" style="font-size:12px"></p>
+    <p id="versionInfo"><br></p>
+    横:<input type="number" id="widthVal" min="3">
+    縦:<input type="number" id="heightVal" min="3">
+    <a id="sizeModeButton" class="button">サイズ変更モード</a>
+    <p id="processTimeInfo"></p>
+    <svg id="svgBoard" width="500" height="500"></svg>
+    <p id="urlInfo" style="font-size:12px"></p>
 
     <div style="width: 500px;">
       <h3>これは何？</h3>
