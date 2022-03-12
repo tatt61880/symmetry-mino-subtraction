@@ -10,7 +10,6 @@ let width = 6;
 let height = 6;
 let width3;
 let height3;
-let initialBlockStr = '';
 const blockSize = 28;
 
 const stateNone = 0;
