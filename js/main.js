@@ -46,25 +46,22 @@ let prevY;
 let drawingState;
 
 function analyzeUrl() {
-  let paravalsStr = location.href.split('?')[1];
-  if (paravalsStr == null) paravalsStr = '';
-  analyzeParavals(paravalsStr);
-}
-
-function analyzeParavals(paravalsStr) {
+  const paravalsStr = location.href.split('?')[1];
+  if (paravalsStr == null) return;
   const paravalsArray = paravalsStr.split('&');
-  if (!paravalsArray.length) return;
-
-  for (let i = 0; i < paravalsArray.length; ++i) {
-    let paraval = paravalsArray[i].split('=');
-    if (paraval.length == 2) {
-      if (paraval[0] == 'w') {
-        width = Number(paraval[1]);
-      } else if (paraval[0] == 'h') {
-        height = Number(paraval[1]);
-      } else if (paraval[0] == 's') {
-        initialBlockStr = paraval[1];
-      }
+  for (const paravals of paravalsArray) {
+    const paraval = paravals.split('=');
+    if (paraval.length != 2) continue;
+    switch (paraval[0]) {
+    case 'w':
+      width = Number(paraval[1]);
+      break;
+    case 'h':
+      height = Number(paraval[1]);
+      break;
+    case 's':
+      initialBlockStr = paraval[1];
+      break;
     }
   }
 }
