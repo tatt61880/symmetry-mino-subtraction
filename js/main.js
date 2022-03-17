@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.12';
+const version = 'Version: 2022.03.17';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -732,7 +732,7 @@ function update(e) {
     break;
   }
   const endTime = Date.now();
-  elemProcessTimeInfo.innerText = `処理時間: ${endTime - startTime}ms`;
+  elemProcessTimeInfo.innerText = `処理時間: ${endTime - startTime}ms (${points.length}解)`;
   updateUrlInfo();
   draw(e);
 }
