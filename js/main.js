@@ -732,7 +732,7 @@ function update(e) {
     break;
   }
   const endTime = Date.now();
-  elemProcessTimeInfo.innerText = `処理時間: ${endTime - startTime}ms (${points.length}解)`;
+  elemProcessTimeInfo.innerText = `処理時間: ${endTime - startTime}ミリ秒。 解となる中心点数: ${points.length}点。`;
   updateUrlInfo();
   draw(e);
 }
