@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.17';
+const version = 'Version: 2022.03.18';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -28,7 +28,12 @@ const dx = [0, 1, 0, -1];
 let blocks = [];
 let points = [];
 
-let sizeMode = false;
+const Mode = {
+  normal : 'normal',
+  size : 'size',
+  puzzle : 'puzzle',
+};
+let mode = Mode.normal;
 
 let elemSvg;
 let elemWidth;
@@ -47,7 +52,8 @@ function analyzeUrl() {
   const res = {
     width: width, 
     height: height,
-    blockStr: ''
+    blockStr: '',
+    mode: mode
   };
   const queryStrs = location.href.split('?')[1];
   if (queryStrs == null) return res;
@@ -66,14 +72,22 @@ function analyzeUrl() {
     case 's':
       res.blockStr = paramVal;
       break;
+    case 'm':
+      res.mode = paramVal;
+      break;
     }
   }
   return res;
 }
 
 function updateUrlInfo() {
-  const url = location.href.split('?')[0] + `?w=${width}&h=${height}&s=${getBlockStr()}`;
-  elemUrlInfo.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
+  let url = location.href.split('?')[0] + `?w=${width}&h=${height}&s=${getBlockStr()}`;
+  if (mode == Mode.puzzle) {
+    url += `&m=${mode}`;
+    elemUrlInfo.innerHTML = `↓出題盤面のURL↓<br><a href="${url}">${url}</a>`;
+  } else {
+    elemUrlInfo.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
+  }
 }
 
 function getBlockStr() {
@@ -105,7 +119,9 @@ function applyBlockStr(e, str, dx, dy)
       if (y == height * 2) break;
       x = width + dx;
     } else {
-      if (isInsideCenterArea(x, y)) blocks[y][x] = c == '1' ? stateA : stateNone;
+      if (isInsideCenterArea(x, y)) {
+        blocks[y][x] = c == '1' ? stateA : stateNone;
+      }
       x++;
     }
   }
@@ -133,7 +149,7 @@ function changeSize(e) {
 
 function updateSizeModeButton()
 {
-  if (sizeMode) {
+  if (mode == Mode.size) {
     elemSizeModeButton.style.backgroundColor = colorSizeMode;
     elemSizeModeButton.innerText = 'サイズ変更モードを無効にする';
   } else {
@@ -145,7 +161,14 @@ function updateSizeModeButton()
 function toggleSizeMode(e)
 {
   e.preventDefault();
-  sizeMode = !sizeMode;
+  switch (mode) {
+  case Mode.normal:
+    mode = Mode.size;
+    break;
+  case Mode.size:
+    mode = Mode.normal;
+    break;
+  } 
   updateSizeModeButton();
 
   draw(e);
@@ -161,6 +184,7 @@ function init(e) {
   document.getElementById('versionInfo').innerText = version;
 
   const res = analyzeUrl();
+  mode = res.mode;
   setSize(res.width, res.height);
   applyBlockStr(e, res.blockStr, 0, 0);
 
@@ -211,24 +235,26 @@ function draw(e) {
   const g = document.createElementNS(SVG_NS, 'g');
 
   // ポインタの位置に応じて図形Bをセットし直す。
-  removeB();
   let selectedPos;
   let centerOfB = undefined;
-  if (!sizeMode && points.length != 0) {
-    const cursorPos = getCursorPos(e);
-    let minDist = -1;
-    for (const point of points) {
-      let dist = (cursorPos.x - point.x * blockSize / 2.0) ** 2 + (cursorPos.y - point.y * blockSize / 2.0) ** 2;
-      if (minDist == -1 || dist < minDist) {
-        minDist = dist;
-        selectedPos = point;
+  if (mode != Mode.puzzle) {
+    removeB();
+    if (mode != Mode.size && points.length != 0) {
+      const cursorPos = getCursorPos(e);
+      let minDist = -1;
+      for (const point of points) {
+        let dist = (cursorPos.x - point.x * blockSize / 2.0) ** 2 + (cursorPos.y - point.y * blockSize / 2.0) ** 2;
+        if (minDist == -1 || dist < minDist) {
+          minDist = dist;
+          selectedPos = point;
+        }
       }
-    }
-    const centerOfA = getCenter(isA);
-    const isCenterOfA = selectedPos.x == centerOfA.x && selectedPos.y == centerOfA.y;
-    hasSolution(selectedPos.x, selectedPos.y, isCenterOfA);
-    if (count(isB)) {
-      centerOfB = getCenter(isB);
+      const centerOfA = getCenter(isA);
+      const isCenterOfA = selectedPos.x == centerOfA.x && selectedPos.y == centerOfA.y;
+      hasSolution(selectedPos.x, selectedPos.y, isCenterOfA);
+      if (count(isB)) {
+        centerOfB = getCenter(isB);
+      }
     }
   }
 
@@ -244,7 +270,7 @@ function draw(e) {
       rect.setAttribute('stroke', 'none');
       g.appendChild(rect);
     }
-    if (sizeMode) {
+    if (mode == Mode.size) {
       const polygon = document.createElementNS(SVG_NS, 'polygon');
       const cx = 3 * blockSize * width / 2;
       const cy = 3 * blockSize * height / 2;
@@ -255,7 +281,7 @@ function draw(e) {
       g.appendChild(polygon);
     }
 
-    const isX = sizeMode ? isA : isAorB;
+    const isX = mode == Mode.size ? isA : isAorB;
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
         if (isX(blocks[y][x])) {
@@ -328,7 +354,33 @@ function draw(e) {
     g.appendChild(circle);
   }
 
-  if (sizeMode) {
+  if (mode == Mode.puzzle) {
+    // 図形(AUB)が連結点対称
+    if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
+      const center = getCenter(isAorB);
+      const circle = document.createElementNS(SVG_NS, 'circle');
+      circle.setAttribute('cx', blockSize * center.x / 2.0);
+      circle.setAttribute('cy', blockSize * center.y / 2.0);
+      circle.setAttribute('r', 7);
+      circle.setAttribute('fill', 'darkviolet');
+      g.appendChild(circle);
+    }
+
+    // 図形Bが連結点対称
+    if (count(isB) != 0 && isPointSymmetry(isB) && isConnected(isB)) {
+      const centerB = getCenter(isB);
+      const centerAorB = getCenter(isAorB);
+      const circle = document.createElementNS(SVG_NS, 'circle');
+      circle.setAttribute('cx', blockSize * centerB.x / 2.0);
+      circle.setAttribute('cy', blockSize * centerB.y / 2.0);
+      circle.setAttribute('r', centerB.x == centerAorB.x && centerB.y == centerAorB.y ? 10 : 5);
+      circle.setAttribute('fill', 'none');
+      circle.setAttribute('stroke', 'blue');
+      g.appendChild(circle);
+    }
+  }
+
+  if (mode == Mode.size) {
     // ＼
     {
       const line = document.createElementNS(SVG_NS, 'line');
@@ -394,7 +446,7 @@ function pointerdown(e) {
   }
   e.preventDefault();
 
-  if (sizeMode) { // サイズ変更モード
+  if (mode == Mode.size) {
     const cursorPos = getCursorPos(e);
     const x = cursorPos.x - 0.5 * blockSize * width3;
     const y = cursorPos.y - 0.5 * blockSize * height3;
@@ -427,12 +479,16 @@ function pointerdown(e) {
   }
 
   setCurXY(e);
-  if (!isInsideCenterArea(curX, curY)) {
+  if (mode != Mode.puzzle && !isInsideCenterArea(curX, curY)) {
     draw(e);
     return;
   }
 
-  drawingState = blocks[curY][curX] == stateA ? stateNone : stateA;
+  if (mode == Mode.normal) {
+    drawingState = blocks[curY][curX] == stateA ? stateNone : stateA;
+  } else {
+    drawingState = blocks[curY][curX] == stateB ? stateNone : stateB;
+  }
   drawingFlag = true;
 
   prevX = -1;
@@ -443,20 +499,26 @@ function pointerdown(e) {
 function pointermove(e) {
   if (debug) window.console.log('pointermove');
 
-  if (sizeMode) return;
+  if (mode == Mode.size) return;
   if (!drawingFlag) {
     draw(e);
     return;
   }
 
   setCurXY(e);
-  if (!isInsideCenterArea(curX, curY)) return;
+  if (mode != Mode.puzzle && !isInsideCenterArea(curX, curY)) return;
   e.preventDefault();
 
   if (curX == prevX && curY == prevY) return;
   prevX = curX;
   prevY = curY;
-  blocks[curY][curX] = drawingState;
+  if (mode == Mode.normal) {
+    blocks[curY][curX] = drawingState;
+  } else {
+    if (blocks[curY][curX] != stateA) {
+      blocks[curY][curX] = drawingState;
+    }
+  }
 
   update(e);
 }
@@ -704,6 +766,11 @@ function count(isX) {
 function update(e) {
   if (debug) window.console.log('update');
 
+  if (mode == Mode.puzzle) {
+    updateUrlInfo();
+    draw(e);
+    return;
+  }
   const startTime = Date.now();
   points = [];
   const centerOfA = getCenter(isA);
