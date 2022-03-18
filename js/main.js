@@ -228,6 +228,31 @@ function getCursorPos(e) {
   return {x: cursorX, y: cursorY};
 }
 
+function createLine(param) {
+  const line = document.createElementNS(SVG_NS, 'line');
+  line.setAttribute('x1', blockSize * param.x1);
+  line.setAttribute('y1', blockSize * param.y1);
+  line.setAttribute('x2', blockSize * param.x2);
+  line.setAttribute('y2', blockSize * param.y2);
+  return line;
+}
+
+function createCircle(param) {
+  const circle = document.createElementNS(SVG_NS, 'circle');
+  circle.setAttribute('cx', blockSize * param.cx);
+  circle.setAttribute('cy', blockSize * param.cy);
+  circle.setAttribute('r', param.r);
+  return circle;
+}
+function createRect(param) {
+  const rect = document.createElementNS(SVG_NS, 'rect');
+  rect.setAttribute('x', blockSize * param.x);
+  rect.setAttribute('y', blockSize * param.y);
+  rect.setAttribute('width', blockSize * param.width);
+  rect.setAttribute('height', blockSize * param.height);
+  return rect;
+}
+
 function draw(e) {
   while (elemSvg.firstChild) {
     elemSvg.removeChild(elemSvg.firstChild);
@@ -261,11 +286,7 @@ function draw(e) {
   // 図形の描画
   {
     {
-      const rect = document.createElementNS(SVG_NS, 'rect');
-      rect.setAttribute('x', 0);
-      rect.setAttribute('y', 0);
-      rect.setAttribute('width', blockSize * width3);
-      rect.setAttribute('height', blockSize * height3);
+      const rect = createRect({x: 0, y: 0, width: width3, height: height3});
       rect.setAttribute('fill', colorNone);
       rect.setAttribute('stroke', 'none');
       g.appendChild(rect);
@@ -285,11 +306,7 @@ function draw(e) {
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
         if (isX(blocks[y][x])) {
-          const rect = document.createElementNS(SVG_NS, 'rect');
-          rect.setAttribute('x', blockSize * x);
-          rect.setAttribute('y', blockSize * y);
-          rect.setAttribute('width', blockSize);
-          rect.setAttribute('height', blockSize);
+          const rect = createRect({x: x, y: y, width: 1, height: 1});
           rect.setAttribute('fill', blocks[y][x] == stateA ? colorA : colorB);
           rect.setAttribute('stroke', 'none');
           g.appendChild(rect);
@@ -300,33 +317,21 @@ function draw(e) {
 
   // 横線
   for (let y = 0; y <= height3; ++y) {
-    const line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('x1', 0);
-    line.setAttribute('x2', blockSize * width3);
-    line.setAttribute('y1', blockSize * y);
-    line.setAttribute('y2', blockSize * y);
+    const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
     line.setAttribute('stroke', 'black');
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
   // 縦線
   for (let x = 0; x <= width3; ++x) {
-    const line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('x1', blockSize * x);
-    line.setAttribute('x2', blockSize * x);
-    line.setAttribute('y1', 0);
-    line.setAttribute('y2', blockSize * height3);
+    const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
     line.setAttribute('stroke', 'black');
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
   // 中央部
   {
-    const rect = document.createElementNS(SVG_NS, 'rect');
-    rect.setAttribute('x', blockSize * width);
-    rect.setAttribute('y', blockSize * height);
-    rect.setAttribute('width', blockSize * width);
-    rect.setAttribute('height', blockSize * height);
+    const rect = createRect({x: width, y: height, width: width, height: height});
     rect.setAttribute('fill', 'none');
     rect.setAttribute('stroke', 'black');
     rect.setAttribute('stroke-dasharray', '2, 2');
@@ -335,20 +340,15 @@ function draw(e) {
 
   // 点
   for (const point of points) {
-    const circle = document.createElementNS(SVG_NS, 'circle');
     const isSelected = point === selectedPos;
-    circle.setAttribute('cx', blockSize * point.x / 2.0);
-    circle.setAttribute('cy', blockSize * point.y / 2.0);
-    circle.setAttribute('r', isSelected ? 7 : 3);
+    const r = isSelected ? 7 : 3;
+    const circle = createCircle({cx: point.x / 2.0, cy: point.y / 2.0, r: r});
     circle.setAttribute('fill', isSelected ? 'darkviolet' : 'red');
     g.appendChild(circle);
   }
 
   if (centerOfB !== undefined) {
-    const circle = document.createElementNS(SVG_NS, 'circle');
-    circle.setAttribute('cx', blockSize * centerOfB.x / 2.0);
-    circle.setAttribute('cy', blockSize * centerOfB.y / 2.0);
-    circle.setAttribute('r', 5);
+    const circle = createCircle({cx: centerOfB.x / 2.0, cy: centerOfB.y / 2.0, r: 5});
     circle.setAttribute('fill', 'none');
     circle.setAttribute('stroke', 'blue');
     g.appendChild(circle);
@@ -358,10 +358,7 @@ function draw(e) {
     // 図形(AUB)が連結点対称
     if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
       const center = getCenter(isAorB);
-      const circle = document.createElementNS(SVG_NS, 'circle');
-      circle.setAttribute('cx', blockSize * center.x / 2.0);
-      circle.setAttribute('cy', blockSize * center.y / 2.0);
-      circle.setAttribute('r', 7);
+      const circle = createCircle({cx: center.x / 2.0, cy: center.y / 2.0, r: 7});
       circle.setAttribute('fill', 'darkviolet');
       g.appendChild(circle);
     }
@@ -370,10 +367,8 @@ function draw(e) {
     if (count(isB) != 0 && isPointSymmetry(isB) && isConnected(isB)) {
       const centerB = getCenter(isB);
       const centerAorB = getCenter(isAorB);
-      const circle = document.createElementNS(SVG_NS, 'circle');
-      circle.setAttribute('cx', blockSize * centerB.x / 2.0);
-      circle.setAttribute('cy', blockSize * centerB.y / 2.0);
-      circle.setAttribute('r', centerB.x == centerAorB.x && centerB.y == centerAorB.y ? 10 : 5);
+      const r = centerB.x == centerAorB.x && centerB.y == centerAorB.y ? 10 : 5;
+      const circle = createCircle({cx: centerB.x / 2.0, cy: centerB.y / 2.0, r: r});
       circle.setAttribute('fill', 'none');
       circle.setAttribute('stroke', 'blue');
       g.appendChild(circle);
@@ -383,22 +378,14 @@ function draw(e) {
   if (mode == Mode.size) {
     // ＼
     {
-      const line = document.createElementNS(SVG_NS, 'line');
-      line.setAttribute('x1', blockSize * width);
-      line.setAttribute('x2', blockSize * width * 2);
-      line.setAttribute('y1', blockSize * height);
-      line.setAttribute('y2', blockSize * height * 2);
+      const line = createLine({x1: width, y1: height, x2: width * 2, y2: height * 2});
       line.setAttribute('stroke', 'black');
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
     }
     // ／
     {
-      const line = document.createElementNS(SVG_NS, 'line');
-      line.setAttribute('x1', blockSize * width * 2);
-      line.setAttribute('x2', blockSize * width);
-      line.setAttribute('y1', blockSize * height);
-      line.setAttribute('y2', blockSize * height * 2);
+      const line = createLine({x1: width * 2, y1: height, x2: width, y2: height * 2});
       line.setAttribute('stroke', 'black');
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
