@@ -29,9 +29,9 @@ let blocks = [];
 let points = [];
 
 const Mode = {
-  normal : 'normal',
-  size : 'size',
-  puzzle : 'puzzle',
+  normal: 'normal',
+  size: 'size',
+  puzzle: 'puzzle',
 };
 let mode = Mode.normal;
 
