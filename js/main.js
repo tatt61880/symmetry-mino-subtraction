@@ -244,6 +244,7 @@ function createCircle(param) {
   circle.setAttribute('r', param.r);
   return circle;
 }
+
 function createRect(param) {
   const rect = document.createElementNS(SVG_NS, 'rect');
   rect.setAttribute('x', blockSize * param.x);
