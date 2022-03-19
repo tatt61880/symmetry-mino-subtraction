@@ -331,7 +331,7 @@ function draw(e) {
     g.appendChild(line);
   }
   // 中央部
-  {
+  if (mode != Mode.puzzle) {
     const rect = createRect({x: width, y: height, width: width, height: height});
     rect.setAttribute('fill', 'none');
     rect.setAttribute('stroke', 'black');
