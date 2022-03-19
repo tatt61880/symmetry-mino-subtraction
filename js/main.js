@@ -207,6 +207,7 @@ function init(e) {
   document.getElementById('versionInfo').innerText = version;
 
   elemStick = document.getElementById('stick');
+  elemStick.style.display = 'none';
 
   elemSizeInfo = document.getElementById('sizeInfo');
   elemWidth = document.getElementById('widthVal');

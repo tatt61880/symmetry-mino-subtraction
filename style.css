@@ -43,7 +43,7 @@ a.stick {
   height: 50px;
   border-radius: 25px;
   position: fixed;
-  bottom: 5%;
+  top: 95%;
   left: 50%;
   background-color: gray;
   opacity: 0.3;
