@@ -164,24 +164,17 @@ function updateModeInfo()
 全体の図形(ピンク+水色)を<br>
 点対称連結ポリオミノにできる場合、<br>
 その時の中心点を示します。`;
-    elemSizeInfo.style.display = 'block';
     break;
   case Mode.size:
     elemModeNameInfo.innerHTML = 'サイズ変更モード';
     elemModeInfo.innerHTML = 'クリック位置に応じて盤面を拡大縮小するモードです。';
-    elemSizeInfo.style.display = 'block';
     break;
   case Mode.manual:
     elemModeNameInfo.innerHTML = '手動モード';
     elemModeInfo.innerHTML = 'ピンクを固定し、水色を自ら描画するモードです。';
-    elemSizeInfo.style.display = 'none';
     break;
   }
-  updateSizeModeButton();
-}
 
-function updateSizeModeButton()
-{
   if (mode == Mode.size) {
     elemSizeModeButton.style.backgroundColor = colorSizeMode;
     elemSizeModeButton.innerText = 'サイズ変更モードを無効にする';
@@ -189,6 +182,8 @@ function updateSizeModeButton()
     elemSizeModeButton.style.backgroundColor = colorNormalMode;
     elemSizeModeButton.innerText = 'サイズ変更モードを有効にする';
   }
+
+  elemSizeInfo.style.display = mode == Mode.manual ? 'none' : 'block';
 }
 
 function toggleSizeMode(e)
@@ -208,16 +203,19 @@ function toggleSizeMode(e)
 }
 
 function init(e) {
-  elemSvg = document.getElementById('svgBoard');
+  document.getElementById('versionInfo').innerText = version;
+
+  elemSizeInfo = document.getElementById('sizeInfo');
   elemWidth = document.getElementById('widthVal');
   elemHeight = document.getElementById('heightVal');
   elemSizeModeButton = document.getElementById('sizeModeButton');
+
   elemProcessTimeInfo = document.getElementById('processTimeInfo');
-  elemSizeInfo = document.getElementById('sizeInfo');
+  elemSvg = document.getElementById('svgBoard');
   elemUrlInfo = document.getElementById('urlInfo');
+
   elemModeNameInfo = document.getElementById('modeNameInfo');
   elemModeInfo = document.getElementById('modeInfo');
-  document.getElementById('versionInfo').innerText = version;
 
   const res = analyzeUrl();
   mode = res.mode;
@@ -330,9 +328,11 @@ function draw(e) {
     }
     if (mode == Mode.size) {
       const polygon = document.createElementNS(SVG_NS, 'polygon');
-      const cx = 3 * blockSize * width / 2;
-      const cy = 3 * blockSize * height / 2;
-      polygon.setAttribute('points', `${cx},${cy + blockSize * height} ${cx + blockSize * width},${cy} ${cx},${cy - blockSize * height} ${cx - blockSize * width},${cy}`);
+      const cx = blockSize * width3 / 2;
+      const cy = blockSize * height3 / 2;
+      const w = blockSize * width;
+      const h = blockSize * height;
+      polygon.setAttribute('points', `${cx},${cy + h} ${cx + w},${cy} ${cx},${cy - h} ${cx - w},${cy}`);
       polygon.setAttribute('fill', colorSizeMode);
       polygon.setAttribute('stroke', 'black');
       polygon.setAttribute('stroke-dasharray', '2, 2');
