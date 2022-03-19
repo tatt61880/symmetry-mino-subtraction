@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.19';
+const version = 'Version: 2022.03.20';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -35,12 +35,13 @@ const Mode = {
 };
 let mode = Mode.normal;
 
-let elemSvg;
+let elemStick;
+let elemSizeInfo;
 let elemWidth;
 let elemHeight;
 let elemSizeModeButton;
 let elemProcessTimeInfo;
-let elemSizeInfo;
+let elemSvg;
 let elemUrlInfo;
 let elemModeNameInfo;
 let elemModeInfo;
@@ -205,6 +206,8 @@ function toggleSizeMode(e)
 function init(e) {
   document.getElementById('versionInfo').innerText = version;
 
+  elemStick = document.getElementById('stick');
+
   elemSizeInfo = document.getElementById('sizeInfo');
   elemWidth = document.getElementById('widthVal');
   elemHeight = document.getElementById('heightVal');
@@ -226,13 +229,16 @@ function init(e) {
   {
     if (window.ontouchstart === undefined) {
       elemSvg.addEventListener('mousedown', pointerdown, false);
+      elemStick.style.display = 'none';
     } else {
       elemSvg.addEventListener('touchstart', pointerdown, false);
+      elemStick.addEventListener('touchstart', stickdown, false);
     }
     if (window.ontouchmove === undefined) {
       elemSvg.addEventListener('mousemove', pointermove, false);
     } else {
       elemSvg.addEventListener('touchmove', pointermove, false);
+      elemStick.addEventListener('touchmove', stickmove, false);
     }
     if (window.ontouchend === undefined) {
       elemSvg.addEventListener('mouseup', pointerup, false);
@@ -240,6 +246,7 @@ function init(e) {
     } else {
       elemSvg.addEventListener('touchend', pointerup, false);
       document.addEventListener('touchend', pointerup, false);
+      elemStick.addEventListener('touchend', stickup, false);
     }
 
     elemWidth.addEventListener('change', changeSize, false);
@@ -248,8 +255,8 @@ function init(e) {
   }
 }
 
-function getCursorPos(e) {
-  const bcRect = elemSvg.getBoundingClientRect();
+function getCursorPos(elem, e) {
+  const bcRect = elem.getBoundingClientRect();
   let cursorX;
   let cursorY;
   if (e.touches !== undefined) {
@@ -300,7 +307,7 @@ function draw(e) {
   if (mode != Mode.manual) {
     removeB();
     if (mode != Mode.size && points.length != 0) {
-      const cursorPos = getCursorPos(e);
+      const cursorPos = getCursorPos(elemSvg, e);
       let minDist = -1;
       for (const point of points) {
         let dist = (cursorPos.x - point.x * blockSize / 2.0) ** 2 + (cursorPos.y - point.y * blockSize / 2.0) ** 2;
@@ -440,7 +447,7 @@ function clamp(val, min, max) {
 
 // 座標をセットする。
 function setCurXY(e) {
-  const cursorPos = getCursorPos(e);
+  const cursorPos = getCursorPos(elemSvg, e);
   curX = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
   curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
 }
@@ -471,7 +478,7 @@ function pointerdown(e) {
   e.preventDefault();
 
   if (mode == Mode.size) {
-    const cursorPos = getCursorPos(e);
+    const cursorPos = getCursorPos(elemSvg, e);
     const x = cursorPos.x - 0.5 * blockSize * width3;
     const y = cursorPos.y - 0.5 * blockSize * height3;
     if (Math.abs(x) / width + Math.abs(y) / height > blockSize) {
@@ -830,6 +837,39 @@ function update(e) {
   updateUrlInfo();
   draw(e);
 }
+
+// {{{ Stick
+let stickStartPos = {};
+let stickOffsetX;
+let stickOffsetY;
+let stickIntervalID;
+function stickdown(e) {
+  e.preventDefault();
+  stickStartPos = getCursorPos(elemStick, e);
+}
+
+function stickup(e) {
+  e.preventDefault();
+  clearInterval(stickIntervalID);
+}
+
+function stickmove(e) {
+  e.preventDefault();
+  const stickPos = getCursorPos(elemStick, e);
+  stickOffsetX = stickPos.x - stickStartPos.x;
+  stickOffsetY = stickPos.y - stickStartPos.y;
+  clearInterval(stickIntervalID);
+  stickIntervalID = setInterval(function() {
+    const currentY = window.pageYOffset;
+    const currentX = window.pageXOffset;
+    window.scrollTo({
+      top: currentY + stickOffsetY,
+      left: currentX + stickOffsetX,
+      behavior: 'smooth',
+    });
+  }, 20);
+}
+// }}}
 
 // {{{ Stack
 function Stack() {
