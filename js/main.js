@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.18';
+const version = 'Version: 2022.03.19';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -31,7 +31,7 @@ let points = [];
 const Mode = {
   normal: 'normal',
   size: 'size',
-  puzzle: 'puzzle',
+  manual: 'manual',
 };
 let mode = Mode.normal;
 
@@ -40,7 +40,10 @@ let elemWidth;
 let elemHeight;
 let elemSizeModeButton;
 let elemProcessTimeInfo;
+let elemSizeInfo;
 let elemUrlInfo;
+let elemModeNameInfo;
+let elemModeInfo;
 
 let curX;
 let curY;
@@ -80,12 +83,15 @@ function analyzeUrl() {
   return res;
 }
 
+function getUrlInfo() {
+  return location.href.split('?')[0] + `?w=${width}&h=${height}&s=${getBlockStr()}`;
+}
+
 function updateUrlInfo() {
-  let url = location.href.split('?')[0] + `?w=${width}&h=${height}&s=${getBlockStr()}`;
-  if (mode == Mode.puzzle) {
-    url += `&m=${mode}`;
-    elemUrlInfo.innerHTML = `↓出題盤面のURL↓<br><a href="${url}">${url}</a>`;
+  if (mode == Mode.manual) {
+    elemUrlInfo.innerHTML = '';
   } else {
+    const url = getUrlInfo();
     elemUrlInfo.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
   }
 }
@@ -147,6 +153,33 @@ function changeSize(e) {
   applyBlockStr(e, blockStr, 0, 0);
 }
 
+function updateModeInfo()
+{
+  switch (mode) {
+  case Mode.normal:
+    elemModeNameInfo.innerHTML = '通常モード';
+    elemModeInfo.innerHTML = `
+濃い点線枠内にポリオミノを描画してください。<br>
+点対称連結ポリオミノ(水色)を足すことで、<br>
+全体の図形(ピンク+水色)を<br>
+点対称連結ポリオミノにできる場合、<br>
+その時の中心点を示します。`;
+    elemSizeInfo.style.display = 'block';
+    break;
+  case Mode.size:
+    elemModeNameInfo.innerHTML = 'サイズ変更モード';
+    elemModeInfo.innerHTML = 'クリック位置に応じて盤面を拡大縮小するモードです。';
+    elemSizeInfo.style.display = 'block';
+    break;
+  case Mode.manual:
+    elemModeNameInfo.innerHTML = '手動モード';
+    elemModeInfo.innerHTML = 'ピンク色を固定し、水色を自ら描画するモードです。';
+    elemSizeInfo.style.display = 'none';
+    break;
+  }
+  updateSizeModeButton();
+}
+
 function updateSizeModeButton()
 {
   if (mode == Mode.size) {
@@ -168,8 +201,8 @@ function toggleSizeMode(e)
   case Mode.size:
     mode = Mode.normal;
     break;
-  } 
-  updateSizeModeButton();
+  }
+  updateModeInfo();
 
   draw(e);
 }
@@ -180,13 +213,17 @@ function init(e) {
   elemHeight = document.getElementById('heightVal');
   elemSizeModeButton = document.getElementById('sizeModeButton');
   elemProcessTimeInfo = document.getElementById('processTimeInfo');
+  elemSizeInfo = document.getElementById('sizeInfo');
   elemUrlInfo = document.getElementById('urlInfo');
+  elemModeNameInfo = document.getElementById('modeNameInfo');
+  elemModeInfo = document.getElementById('modeInfo');
   document.getElementById('versionInfo').innerText = version;
 
   const res = analyzeUrl();
   mode = res.mode;
   setSize(res.width, res.height);
   applyBlockStr(e, res.blockStr, 0, 0);
+  updateModeInfo();
 
   {
     if (window.ontouchstart === undefined) {
@@ -210,7 +247,6 @@ function init(e) {
     elemWidth.addEventListener('change', changeSize, false);
     elemHeight.addEventListener('change', changeSize, false);
     elemSizeModeButton.addEventListener('click', toggleSizeMode, false);
-    updateSizeModeButton();
   }
 }
 
@@ -263,7 +299,7 @@ function draw(e) {
   // ポインタの位置に応じて図形Bをセットし直す。
   let selectedPos;
   let centerOfB = undefined;
-  if (mode != Mode.puzzle) {
+  if (mode != Mode.manual) {
     removeB();
     if (mode != Mode.size && points.length != 0) {
       const cursorPos = getCursorPos(e);
@@ -331,7 +367,7 @@ function draw(e) {
     g.appendChild(line);
   }
   // 中央部
-  if (mode != Mode.puzzle) {
+  if (mode != Mode.manual) {
     const rect = createRect({x: width, y: height, width: width, height: height});
     rect.setAttribute('fill', 'none');
     rect.setAttribute('stroke', 'black');
@@ -355,7 +391,7 @@ function draw(e) {
     g.appendChild(circle);
   }
 
-  if (mode == Mode.puzzle) {
+  if (mode == Mode.manual) {
     // 図形(AUB)が連結点対称
     if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
       const center = getCenter(isAorB);
@@ -467,7 +503,7 @@ function pointerdown(e) {
   }
 
   setCurXY(e);
-  if (mode != Mode.puzzle && !isInsideCenterArea(curX, curY)) {
+  if (mode != Mode.manual && !isInsideCenterArea(curX, curY)) {
     draw(e);
     return;
   }
@@ -494,7 +530,7 @@ function pointermove(e) {
   }
 
   setCurXY(e);
-  if (mode != Mode.puzzle && !isInsideCenterArea(curX, curY)) return;
+  if (mode != Mode.manual && !isInsideCenterArea(curX, curY)) return;
   e.preventDefault();
 
   if (curX == prevX && curY == prevY) return;
@@ -754,7 +790,7 @@ function count(isX) {
 function update(e) {
   if (debug) window.console.log('update');
 
-  if (mode == Mode.puzzle) {
+  if (mode == Mode.manual) {
     updateUrlInfo();
     draw(e);
     return;
@@ -787,7 +823,10 @@ function update(e) {
     break;
   }
   const endTime = Date.now();
-  elemProcessTimeInfo.innerText = `処理時間: ${endTime - startTime}ミリ秒。 解となる中心点数: ${points.length}点。`;
+  elemProcessTimeInfo.innerHTML = `
+処理時間: ${endTime - startTime}ミリ秒<br>
+解となる中心点数(濃い点線枠内): ${points.length}点<br>
+<a href="${getUrlInfo()}&m=manual" target="_blank">この盤面を手動モードで開く</a> (別タブで開きます)`;
   updateUrlInfo();
   draw(e);
 }
