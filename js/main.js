@@ -465,7 +465,7 @@ function pointerup() {
 function isTouchScreenNearEdge(e) {
   if (e.touches === undefined) return false;
   const x = e.touches[0].clientX;
-  return x < 30 || document.body.clientWidth - 30 < x;
+  return x < 30 || screen.width - 30 < x;
 }
 
 function pointerdown(e) {
