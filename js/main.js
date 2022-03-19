@@ -229,16 +229,16 @@ function init(e) {
   {
     if (window.ontouchstart === undefined) {
       elemSvg.addEventListener('mousedown', pointerdown, false);
-      elemStick.style.display = 'none';
+      //elemStick.style.display = 'none';
     } else {
       elemSvg.addEventListener('touchstart', pointerdown, false);
-      elemStick.addEventListener('touchstart', stickdown, false);
+      //elemStick.addEventListener('touchstart', stickdown, false);
     }
     if (window.ontouchmove === undefined) {
       elemSvg.addEventListener('mousemove', pointermove, false);
     } else {
       elemSvg.addEventListener('touchmove', pointermove, false);
-      elemStick.addEventListener('touchmove', stickmove, false);
+      //elemStick.addEventListener('touchmove', stickmove, false);
     }
     if (window.ontouchend === undefined) {
       elemSvg.addEventListener('mouseup', pointerup, false);
@@ -246,7 +246,7 @@ function init(e) {
     } else {
       elemSvg.addEventListener('touchend', pointerup, false);
       document.addEventListener('touchend', pointerup, false);
-      elemStick.addEventListener('touchend', stickup, false);
+      //elemStick.addEventListener('touchend', stickup, false);
     }
 
     elemWidth.addEventListener('change', changeSize, false);
