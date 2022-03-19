@@ -45,10 +45,7 @@ let elemUrlInfo;
 let elemModeNameInfo;
 let elemModeInfo;
 
-let curX;
-let curY;
-let prevX;
-let prevY;
+let prev = {x: 0, y: 0};
 let drawingState;
 
 function analyzeUrl() {
@@ -439,10 +436,11 @@ function clamp(val, min, max) {
 }
 
 // 座標をセットする。
-function setCurXY(e) {
+function getCurXY(e) {
   const cursorPos = getCursorPos(elemSvg, e);
-  curX = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
-  curY = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
+  const x = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
+  const y = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
+  return {x: x, y: y};
 }
 
 // 中心付近の枠内およびその周上か否か。
@@ -508,21 +506,21 @@ function pointerdown(e) {
     return;
   }
 
-  setCurXY(e);
-  if (mode != Mode.manual && !isInsideCenterArea(curX, curY)) {
+  const cur = getCurXY(e);
+  if (mode != Mode.manual && !isInsideCenterArea(cur.x, cur.y)) {
     draw(e);
     return;
   }
 
   if (mode == Mode.normal) {
-    drawingState = blocks[curY][curX] == stateA ? stateNone : stateA;
+    drawingState = blocks[cur.y][cur.x] == stateA ? stateNone : stateA;
   } else {
-    drawingState = blocks[curY][curX] == stateB ? stateNone : stateB;
+    drawingState = blocks[cur.y][cur.x] == stateB ? stateNone : stateB;
   }
   drawingFlag = true;
 
-  prevX = -1;
-  prevY = -1;
+  prev.x = -1;
+  prev.y = -1;
   pointermove(e);
 }
 
@@ -535,18 +533,19 @@ function pointermove(e) {
     return;
   }
 
-  setCurXY(e);
-  if (mode != Mode.manual && !isInsideCenterArea(curX, curY)) return;
-  if (!isTouchScreenNearEdge(e)) e.preventDefault();
+  const cur = getCurXY(e);
+  if (mode != Mode.manual && !isInsideCenterArea(cur.x, cur.y)) return;
+  if (isTouchScreenNearEdge(e)) return;
+  e.preventDefault();
 
-  if (curX == prevX && curY == prevY) return;
-  prevX = curX;
-  prevY = curY;
+  if (cur.x == prev.x && cur.y == prev.y) return;
+  prev.x = cur.x;
+  prev.y = cur.y;
   if (mode == Mode.normal) {
-    blocks[curY][curX] = drawingState;
+    blocks[cur.y][cur.x] = drawingState;
   } else {
-    if (blocks[curY][curX] != stateA) {
-      blocks[curY][curX] = drawingState;
+    if (blocks[cur.y][cur.x] != stateA) {
+      blocks[cur.y][cur.x] = drawingState;
     }
   }
 
