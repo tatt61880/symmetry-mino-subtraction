@@ -173,7 +173,7 @@ function updateModeInfo()
     break;
   case Mode.manual:
     elemModeNameInfo.innerHTML = '手動モード';
-    elemModeInfo.innerHTML = 'ピンク色を固定し、水色を自ら描画するモードです。';
+    elemModeInfo.innerHTML = 'ピンクを固定し、水色を自ら描画するモードです。';
     elemSizeInfo.style.display = 'none';
     break;
   }
