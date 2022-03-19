@@ -461,10 +461,11 @@ function pointerup() {
   drawingFlag = false;
 }
 
-// タッチ環境において、画面の左端付近がタッチされているのか否か。
-function isLeftSide(e) {
+// タッチ環境において、画面端付近か否か。
+function isTouchScreenNearEdge(e) {
   if (e.touches === undefined) return false;
-  return e.touches[0].clientX < 30;
+  const x = e.touches[0].clientX;
+  return x < 30 || document.body.clientWidth - 30 < x;
 }
 
 function pointerdown(e) {
@@ -474,7 +475,7 @@ function pointerdown(e) {
   if (touches !== undefined && touches.length > 1) {
     return;
   }
-  if (!isLeftSide(e)) e.preventDefault();
+  if (!isTouchScreenNearEdge(e)) e.preventDefault();
 
   if (mode == Mode.size) {
     const cursorPos = getCursorPos(elemSvg, e);
@@ -536,7 +537,7 @@ function pointermove(e) {
 
   setCurXY(e);
   if (mode != Mode.manual && !isInsideCenterArea(curX, curY)) return;
-  if (!isLeftSide(e)) e.preventDefault();
+  if (!isTouchScreenNearEdge(e)) e.preventDefault();
 
   if (curX == prevX && curY == prevY) return;
   prevX = curX;
