@@ -35,7 +35,6 @@ const Mode = {
 };
 let mode = Mode.normal;
 
-let elemStick;
 let elemSizeInfo;
 let elemWidth;
 let elemHeight;
@@ -206,9 +205,6 @@ function toggleSizeMode(e)
 function init(e) {
   document.getElementById('versionInfo').innerText = version;
 
-  elemStick = document.getElementById('stick');
-  elemStick.style.display = 'none';
-
   elemSizeInfo = document.getElementById('sizeInfo');
   elemWidth = document.getElementById('widthVal');
   elemHeight = document.getElementById('heightVal');
@@ -230,16 +226,13 @@ function init(e) {
   {
     if (window.ontouchstart === undefined) {
       elemSvg.addEventListener('mousedown', pointerdown, false);
-      elemStick.style.display = 'none';
     } else {
       elemSvg.addEventListener('touchstart', pointerdown, false);
-      elemStick.addEventListener('touchstart', stickdown, false);
     }
     if (window.ontouchmove === undefined) {
       elemSvg.addEventListener('mousemove', pointermove, false);
     } else {
       elemSvg.addEventListener('touchmove', pointermove, false);
-      elemStick.addEventListener('touchmove', stickmove, false);
     }
     if (window.ontouchend === undefined) {
       elemSvg.addEventListener('mouseup', pointerup, false);
@@ -247,7 +240,6 @@ function init(e) {
     } else {
       elemSvg.addEventListener('touchend', pointerup, false);
       document.addEventListener('touchend', pointerup, false);
-      elemStick.addEventListener('touchend', stickup, false);
     }
 
     elemWidth.addEventListener('change', changeSize, false);
@@ -469,6 +461,12 @@ function pointerup() {
   drawingFlag = false;
 }
 
+// タッチ環境において、画面の左端付近がタッチされているのか否か。
+function isLeftSide(e) {
+  if (e.touches === undefined) return false;
+  return e.touches[0].clientX < 30;
+}
+
 function pointerdown(e) {
   if (debug) window.console.log('pointerdown');
 
@@ -476,7 +474,7 @@ function pointerdown(e) {
   if (touches !== undefined && touches.length > 1) {
     return;
   }
-  e.preventDefault();
+  if (!isLeftSide(e)) e.preventDefault();
 
   if (mode == Mode.size) {
     const cursorPos = getCursorPos(elemSvg, e);
@@ -503,7 +501,6 @@ function pointerdown(e) {
         if (y < 0) dy += dd;
       }
     }
-    e.preventDefault();
     setSize(newWidth, newHeight);
     applyBlockStr(e, blockStr, dx, dy);
     draw(e);
@@ -539,7 +536,7 @@ function pointermove(e) {
 
   setCurXY(e);
   if (mode != Mode.manual && !isInsideCenterArea(curX, curY)) return;
-  e.preventDefault();
+  if (!isLeftSide(e)) e.preventDefault();
 
   if (curX == prevX && curY == prevY) return;
   prevX = curX;
@@ -838,39 +835,6 @@ function update(e) {
   updateUrlInfo();
   draw(e);
 }
-
-// {{{ Stick
-let stickStartPos = {};
-let stickOffsetX;
-let stickOffsetY;
-let stickIntervalID;
-function stickdown(e) {
-  e.preventDefault();
-  stickStartPos = getCursorPos(elemStick, e);
-}
-
-function stickup(e) {
-  e.preventDefault();
-  clearInterval(stickIntervalID);
-}
-
-function stickmove(e) {
-  e.preventDefault();
-  const stickPos = getCursorPos(elemStick, e);
-  stickOffsetX = stickPos.x - stickStartPos.x;
-  stickOffsetY = stickPos.y - stickStartPos.y;
-  clearInterval(stickIntervalID);
-  stickIntervalID = setInterval(function() {
-    const currentY = window.pageYOffset;
-    const currentX = window.pageXOffset;
-    window.scrollTo({
-      top: currentY + stickOffsetY,
-      left: currentX + stickOffsetX,
-      behavior: 'smooth',
-    });
-  }, 20);
-}
-// }}}
 
 // {{{ Stack
 function Stack() {
