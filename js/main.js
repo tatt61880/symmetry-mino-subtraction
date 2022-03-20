@@ -19,8 +19,11 @@ const stateB = 2;
 const colorNone = 'white';
 const colorA = 'pink';
 const colorB = 'aqua';
+
 const colorNormalMode = 'white';
 const colorSizeMode = '#ffffaa';
+
+const colorLine = '#333';
 
 const pointSizeNormal = 3;
 const pointSizeSelected = 7;
@@ -29,8 +32,6 @@ const pointSizeCenterOfB = 7;
 const pointColorNormal = 'red';
 const pointColorSelected = 'darkviolet';
 const pointColorCenterOfB = 'blue';
-
-const lineColor = '#333';
 
 const dy = [1, 0, -1, 0];
 const dx = [0, 1, 0, -1];
@@ -341,7 +342,7 @@ function draw(e) {
       const h = blockSize * height;
       polygon.setAttribute('points', `${cx},${cy + h} ${cx + w},${cy} ${cx},${cy - h} ${cx - w},${cy}`);
       polygon.setAttribute('fill', colorSizeMode);
-      polygon.setAttribute('stroke', lineColor);
+      polygon.setAttribute('stroke', colorLine);
       polygon.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(polygon);
     }
@@ -362,14 +363,14 @@ function draw(e) {
   // 横線
   for (let y = 0; y <= height3; ++y) {
     const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
-    line.setAttribute('stroke', lineColor);
+    line.setAttribute('stroke', colorLine);
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
   // 縦線
   for (let x = 0; x <= width3; ++x) {
     const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
-    line.setAttribute('stroke', lineColor);
+    line.setAttribute('stroke', colorLine);
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
@@ -377,7 +378,7 @@ function draw(e) {
   if (mode != Mode.manual) {
     const rect = createRect({x: width, y: height, width: width, height: height});
     rect.setAttribute('fill', 'none');
-    rect.setAttribute('stroke', lineColor);
+    rect.setAttribute('stroke', colorLine);
     rect.setAttribute('stroke-dasharray', '2, 2');
     g.appendChild(rect);
   }
@@ -431,14 +432,14 @@ function draw(e) {
     // ＼
     {
       const line = createLine({x1: width, y1: height, x2: width * 2, y2: height * 2});
-      line.setAttribute('stroke', lineColor);
+      line.setAttribute('stroke', colorLine);
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
     }
     // ／
     {
       const line = createLine({x1: width * 2, y1: height, x2: width, y2: height * 2});
-      line.setAttribute('stroke', lineColor);
+      line.setAttribute('stroke', colorLine);
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
     }
