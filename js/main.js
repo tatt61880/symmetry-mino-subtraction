@@ -8,6 +8,8 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 let drawingFlag = false;
 let width = 6;
 let height = 6;
+let width2;
+let height2;
 let width3;
 let height3;
 const blockSize = 28;
@@ -130,7 +132,7 @@ function applyBlockStr(e, str, dx, dy)
   for (const c of str) {
     if (c == '-') {
       y++;
-      if (y == height * 2) break;
+      if (y == height2) break;
       x = width + dx;
     } else {
       if (isInsideCenterArea(x, y)) {
@@ -145,6 +147,8 @@ function applyBlockStr(e, str, dx, dy)
 function setSize(w, h) {
   width = w;
   height = h;
+  width2 = w * 2;
+  height2 = h * 2;
   width3 = w * 3;
   height3 = h * 3;
   elemSvg.setAttribute('width', blockSize * width3);
@@ -431,14 +435,14 @@ function draw(e) {
   if (mode == Mode.size) {
     // ＼
     {
-      const line = createLine({x1: width, y1: height, x2: width * 2, y2: height * 2});
+      const line = createLine({x1: width, y1: height, x2: width2, y2: height2});
       line.setAttribute('stroke', colorLine);
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
     }
     // ／
     {
-      const line = createLine({x1: width * 2, y1: height, x2: width, y2: height * 2});
+      const line = createLine({x1: width2, y1: height, x2: width, y2: height2});
       line.setAttribute('stroke', colorLine);
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
@@ -649,8 +653,8 @@ function isConnected(isX) {
 
 // 図形Aを点(cx, cy)で点対称になるようにしたとき 元の図形と重なっていない部分を図形Bとする。
 function pointSymmetryA(firstB, cx, cy) {
-  for (let y = 0; y < height3; ++y) {
-    for (let x = 0; x < width3; ++x) {
+  for (let y = height; y < height2; ++y) {
+    for (let x = width; x < width2; ++x) {
       if (blocks[y][x] == stateA) {
         const bx = cx - x - 1;
         const by = cy - y - 1;
@@ -820,8 +824,8 @@ function update(e) {
   case 0:
     break;
   case 1:
-    for (let cy = height * 2; cy <= height * 4; ++cy) {
-      for (let cx = width * 2; cx <= width * 4; ++cx) {
+    for (let cy = height * 2; cy <= height2 * 2; ++cy) {
+      for (let cx = width * 2; cx <= width2 * 2; ++cx) {
         if (cx == centerOfA.x || cy == centerOfA.y) {
           points.push({x: cx, y: cy});
         }
@@ -829,8 +833,8 @@ function update(e) {
     }
     break;
   default:
-    for (let cy = height * 2; cy <= height * 4; ++cy) {
-      for (let cx = width * 2; cx <= width * 4; ++cx) {
+    for (let cy = height * 2; cy <= height2 * 2; ++cy) {
+      for (let cx = width * 2; cx <= width2 * 2; ++cx) {
         const isCenterOfA = cx == centerOfA.x && cy == centerOfA.y;
         if (hasSolution(cx, cy, isCenterOfA)) {
           points.push({x: cx, y: cy});
