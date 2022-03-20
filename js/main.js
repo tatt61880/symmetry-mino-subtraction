@@ -473,7 +473,8 @@ function pointerdown(e) {
   if (touches !== undefined && touches.length > 1) {
     return;
   }
-  if (!isTouchScreenNearEdge(e)) e.preventDefault();
+  if (isTouchScreenNearEdge(e)) return;
+  e.preventDefault();
 
   if (mode == Mode.size) {
     const cursorPos = getCursorPos(elemSvg, e);
@@ -535,7 +536,6 @@ function pointermove(e) {
 
   const cur = getCurXY(e);
   if (mode != Mode.manual && !isInsideCenterArea(cur.x, cur.y)) return;
-  if (isTouchScreenNearEdge(e)) return;
   e.preventDefault();
 
   if (cur.x == prev.x && cur.y == prev.y) return;
