@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.20';
+const version = 'Version: 2022.03.21';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -30,17 +30,17 @@ const colorSizeMode = '#ffffaa';
 const colorLine = '#333';
 
 const pointSizeNormal = 3;
-const pointSizeSelected = 7;
-const pointSizeCenterOfB = 7;
+const pointSizeSelected = 6;
+const pointSizeCenterOfB = 6;
 
 const pointColorNormal = 'red';
 const pointColorSelected = 'darkviolet';
 const pointColorCenterOfB = 'blue';
 
-const dy = [1, 0, -1, 0];
-const dx = [0, 1, 0, -1];
+const dys = [1, 0, -1, 0];
+const dxs = [0, 1, 0, -1];
 
-let blocks = [];
+let states = [];
 let points = [];
 
 const Mode = {
@@ -113,7 +113,7 @@ function getBlockStr() {
   for (let y = 0; y < height; ++y) {
     let line = '';
     for (let x = 0; x < width; ++x) {
-      line += isA(blocks[height + y][width + x]) ? '1' : '0';
+      line += isA(states[height + y][width + x]) ? '1' : '0';
     }
     res += line.replace(/0+$/, '');
     res += '-';
@@ -124,9 +124,9 @@ function getBlockStr() {
 function applyBlockStr(e, str, dx, dy)
 {
   for (let y = 0; y < height3; ++y) {
-    blocks[y] = [];
+    states[y] = [];
     for (let x = 0; x < width3; ++x) {
-      blocks[y][x] = stateNone;
+      states[y][x] = stateNone;
     }
   }
   let y = height + dy;
@@ -138,7 +138,7 @@ function applyBlockStr(e, str, dx, dy)
       x = width + dx;
     } else {
       if (isInsideCenterArea(x, y)) {
-        blocks[y][x] = c == '1' ? stateA : stateNone;
+        states[y][x] = c == '1' ? stateA : stateNone;
       }
       x++;
     }
@@ -358,9 +358,9 @@ function draw(e) {
     const isX = mode == Mode.size ? isA : isAorB;
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
-        if (isX(blocks[y][x])) {
+        if (isX(states[y][x])) {
           const rect = createRect({x: x, y: y, width: 1, height: 1});
-          rect.setAttribute('fill', blocks[y][x] == stateA ? colorA : colorB);
+          rect.setAttribute('fill', states[y][x] == stateA ? colorA : colorB);
           rect.setAttribute('stroke', 'none');
           g.appendChild(rect);
         }
@@ -542,7 +542,7 @@ function pointerdown(e) {
   }
 
   const targetState = mode == Mode.normal ? stateA : stateB;
-  drawingState = blocks[cur.y][cur.x] == targetState ? stateNone : targetState;
+  drawingState = states[cur.y][cur.x] == targetState ? stateNone : targetState;
   drawingFlag = true;
 
   prev = {x: -1, y: -1};
@@ -565,8 +565,8 @@ function pointermove(e) {
   if (cur.x == prev.x && cur.y == prev.y) return;
   prev.x = cur.x;
   prev.y = cur.y;
-  if (mode == Mode.normal || blocks[cur.y][cur.x] != stateA) {
-    blocks[cur.y][cur.x] = drawingState;
+  if (mode == Mode.normal || states[cur.y][cur.x] != stateA) {
+    states[cur.y][cur.x] = drawingState;
   }
 
   update(e);
@@ -592,7 +592,7 @@ function isPointSymmetry(isX) {
   let maxY = 0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (isX(blocks[y][x])) {
+      if (isX(states[y][x])) {
         minX = Math.min(minX, x);
         maxX = Math.max(maxX, x);
         minY = Math.min(minY, y);
@@ -602,7 +602,7 @@ function isPointSymmetry(isX) {
   }
   for (let y = minY; y <= maxY; ++y) {
     for (let x = minX; x <= maxX; ++x) {
-      if (isX(blocks[y][x]) && !isX(blocks[minY + maxY - y][minX + maxX - x])) {
+      if (isX(states[y][x]) && !isX(states[minY + maxY - y][minX + maxX - x])) {
         return false;
       }
     }
@@ -612,15 +612,15 @@ function isPointSymmetry(isX) {
 
 // 図形が連結か否か。
 function isConnected(isX) {
-  const b = new Array(height3);
+  const statesTemp = new Array(height3);
   for (let y = 0; y < height3; ++y) {
-    b[y] = blocks[y].slice();
+    statesTemp[y] = states[y].slice();
   }
   let x0;
   let y0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (isX(b[y][x])) {
+      if (isX(statesTemp[y][x])) {
         x0 = x;
         y0 = y;
         break;
@@ -630,18 +630,18 @@ function isConnected(isX) {
 
   const st = new Stack();
   st.push([x0, y0]);
-  b[y0][x0] = stateNone;
+  statesTemp[y0][x0] = stateNone;
   while (!st.empty()) {
     const xy = st.pop();
     for (let i = 0; i < 4; i++) {
-      const xx = xy[0] + dx[i];
-      const yy = xy[1] + dy[i];
+      const xx = xy[0] + dxs[i];
+      const yy = xy[1] + dys[i];
       if (xx == -1) continue;
       if (yy == -1) continue;
       if (xx == width3) continue;
       if (yy == height3) continue;
-      if (isX(b[yy][xx])) {
-        b[yy][xx] = stateNone;
+      if (isX(statesTemp[yy][xx])) {
+        statesTemp[yy][xx] = stateNone;
         st.push([xx, yy]);
       }
     }
@@ -649,7 +649,7 @@ function isConnected(isX) {
 
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (isX(b[y][x])) return false;
+      if (isX(statesTemp[y][x])) return false;
     }
   }
   return true;
@@ -659,7 +659,7 @@ function isConnected(isX) {
 function pointSymmetryA(firstB, cx, cy) {
   for (let y = height; y < height2; ++y) {
     for (let x = width; x < width2; ++x) {
-      if (blocks[y][x] == stateA) {
+      if (states[y][x] == stateA) {
         const bx = cx - x - 1;
         const by = cy - y - 1;
 
@@ -669,8 +669,8 @@ function pointSymmetryA(firstB, cx, cy) {
         if (bx >= width3) return false;
         if (by >= height3) return false;
 
-        if (blocks[by][bx] == stateNone) {
-          blocks[by][bx] = stateB;
+        if (states[by][bx] == stateNone) {
+          states[by][bx] = stateB;
           firstB.push({x: bx, y: by});
         }
       }
@@ -692,9 +692,9 @@ function pointSymmetry(newB, cx, cy, checkFlag) {
     if (bx >= width3) return undefined;
     if (by >= height3) return undefined;
 
-    switch (blocks[by][bx]) {
+    switch (states[by][bx]) {
     case stateNone:
-      blocks[by][bx] = stateB;
+      states[by][bx] = stateB;
       nextB.push({x: bx, y: by});
       break;
     case stateA:
@@ -708,8 +708,8 @@ function pointSymmetry(newB, cx, cy, checkFlag) {
 function removeB() {
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (blocks[y][x] == stateB) {
-        blocks[y][x] = stateNone;
+      if (states[y][x] == stateB) {
+        states[y][x] = stateNone;
       }
     }
   }
@@ -717,7 +717,7 @@ function removeB() {
 
 function addB(arrB) {
   for (const p of arrB) {
-    blocks[p.y][p.x] = stateB;
+    states[p.y][p.x] = stateB;
   }
 }
 
@@ -791,7 +791,7 @@ function getCenter(isX) {
   let maxY = 0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (isX(blocks[y][x])) {
+      if (isX(states[y][x])) {
         minX = Math.min(minX, x);
         maxX = Math.max(maxX, x);
         minY = Math.min(minY, y);
@@ -806,7 +806,7 @@ function count(isX) {
   let cnt = 0;
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
-      if (isX(blocks[y][x])) cnt++;
+      if (isX(states[y][x])) cnt++;
     }
   }
   return cnt;
