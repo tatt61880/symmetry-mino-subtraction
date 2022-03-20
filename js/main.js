@@ -22,6 +22,16 @@ const colorB = 'aqua';
 const colorNormalMode = 'white';
 const colorSizeMode = '#ffffaa';
 
+const pointSizeNormal = 3;
+const pointSizeSelected = 7;
+const pointSizeCenterOfB = 7;
+
+const pointColorNormal = 'red';
+const pointColorSelected = 'darkviolet';
+const pointColorCenterOfB = 'blue';
+
+const lineColor = '#333';
+
 const dy = [1, 0, -1, 0];
 const dx = [0, 1, 0, -1];
 
@@ -331,7 +341,7 @@ function draw(e) {
       const h = blockSize * height;
       polygon.setAttribute('points', `${cx},${cy + h} ${cx + w},${cy} ${cx},${cy - h} ${cx - w},${cy}`);
       polygon.setAttribute('fill', colorSizeMode);
-      polygon.setAttribute('stroke', 'black');
+      polygon.setAttribute('stroke', lineColor);
       polygon.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(polygon);
     }
@@ -352,14 +362,14 @@ function draw(e) {
   // 横線
   for (let y = 0; y <= height3; ++y) {
     const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
-    line.setAttribute('stroke', 'black');
+    line.setAttribute('stroke', lineColor);
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
   // 縦線
   for (let x = 0; x <= width3; ++x) {
     const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
-    line.setAttribute('stroke', 'black');
+    line.setAttribute('stroke', lineColor);
     line.setAttribute('stroke-dasharray', '1, 3');
     g.appendChild(line);
   }
@@ -367,7 +377,7 @@ function draw(e) {
   if (mode != Mode.manual) {
     const rect = createRect({x: width, y: height, width: width, height: height});
     rect.setAttribute('fill', 'none');
-    rect.setAttribute('stroke', 'black');
+    rect.setAttribute('stroke', lineColor);
     rect.setAttribute('stroke-dasharray', '2, 2');
     g.appendChild(rect);
   }
@@ -375,36 +385,44 @@ function draw(e) {
   // 点
   for (const point of points) {
     const isSelected = point === selectedPos;
-    const r = isSelected ? 7 : 3;
+    const r = isSelected ? pointSizeSelected : pointSizeNormal;
     const circle = createCircle({cx: point.x / 2, cy: point.y / 2, r: r});
-    circle.setAttribute('fill', isSelected ? 'darkviolet' : 'red');
+    circle.setAttribute('fill', isSelected ? pointColorSelected : pointColorNormal);
     g.appendChild(circle);
   }
 
   if (centerOfB !== undefined) {
-    const circle = createCircle({cx: centerOfB.x / 2, cy: centerOfB.y / 2, r: 5});
+    const circle = createCircle({cx: centerOfB.x / 2, cy: centerOfB.y / 2, r: pointSizeCenterOfB});
     circle.setAttribute('fill', 'none');
-    circle.setAttribute('stroke', 'blue');
+    circle.setAttribute('stroke', pointColorCenterOfB);
     g.appendChild(circle);
   }
 
   if (mode == Mode.manual) {
+    let flag = false;
+
     // 図形(AUB)が連結点対称
     if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
       const center = getCenter(isAorB);
-      const circle = createCircle({cx: center.x / 2, cy: center.y / 2, r: 7});
-      circle.setAttribute('fill', 'darkviolet');
+      const circle = createCircle({cx: center.x / 2, cy: center.y / 2, r: pointSizeSelected});
+      circle.setAttribute('fill', pointColorSelected);
       g.appendChild(circle);
+      flag = true;
     }
 
     // 図形Bが連結点対称
     if (count(isB) != 0 && isPointSymmetry(isB) && isConnected(isB)) {
       const centerB = getCenter(isB);
       const centerAorB = getCenter(isAorB);
-      const r = centerB.x == centerAorB.x && centerB.y == centerAorB.y ? 10 : 5;
+      let r;
+      if (flag && centerB.x == centerAorB.x && centerB.y == centerAorB.y) {
+        r = pointSizeSelected + 5;
+      } else {
+        r = pointSizeCenterOfB;
+      }
       const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: r});
       circle.setAttribute('fill', 'none');
-      circle.setAttribute('stroke', 'blue');
+      circle.setAttribute('stroke', pointColorCenterOfB);
       g.appendChild(circle);
     }
   }
@@ -413,14 +431,14 @@ function draw(e) {
     // ＼
     {
       const line = createLine({x1: width, y1: height, x2: width * 2, y2: height * 2});
-      line.setAttribute('stroke', 'black');
+      line.setAttribute('stroke', lineColor);
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
     }
     // ／
     {
       const line = createLine({x1: width * 2, y1: height, x2: width, y2: height * 2});
-      line.setAttribute('stroke', 'black');
+      line.setAttribute('stroke', lineColor);
       line.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(line);
     }
