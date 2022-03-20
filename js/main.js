@@ -45,7 +45,7 @@ let elemUrlInfo;
 let elemModeNameInfo;
 let elemModeInfo;
 
-let prev = {x: 0, y: 0};
+let prev = {x: -1, y: -1};
 let drawingState;
 
 function analyzeUrl() {
@@ -136,8 +136,8 @@ function setSize(w, h) {
   height = h;
   width3 = w * 3;
   height3 = h * 3;
-  elemSvg.setAttribute('width', width3 * blockSize);
-  elemSvg.setAttribute('height', height3 * blockSize);
+  elemSvg.setAttribute('width', blockSize * width3);
+  elemSvg.setAttribute('height', blockSize * height3);
   elemWidth.value = w;
   elemHeight.value = h;
 }
@@ -300,7 +300,7 @@ function draw(e) {
       const cursorPos = getCursorPos(elemSvg, e);
       let minDist = -1;
       for (const point of points) {
-        let dist = (cursorPos.x - point.x * blockSize / 2.0) ** 2 + (cursorPos.y - point.y * blockSize / 2.0) ** 2;
+        let dist = (cursorPos.x - blockSize * point.x / 2) ** 2 + (cursorPos.y - blockSize * point.y / 2) ** 2;
         if (minDist == -1 || dist < minDist) {
           minDist = dist;
           selectedPos = point;
@@ -376,13 +376,13 @@ function draw(e) {
   for (const point of points) {
     const isSelected = point === selectedPos;
     const r = isSelected ? 7 : 3;
-    const circle = createCircle({cx: point.x / 2.0, cy: point.y / 2.0, r: r});
+    const circle = createCircle({cx: point.x / 2, cy: point.y / 2, r: r});
     circle.setAttribute('fill', isSelected ? 'darkviolet' : 'red');
     g.appendChild(circle);
   }
 
   if (centerOfB !== undefined) {
-    const circle = createCircle({cx: centerOfB.x / 2.0, cy: centerOfB.y / 2.0, r: 5});
+    const circle = createCircle({cx: centerOfB.x / 2, cy: centerOfB.y / 2, r: 5});
     circle.setAttribute('fill', 'none');
     circle.setAttribute('stroke', 'blue');
     g.appendChild(circle);
@@ -392,7 +392,7 @@ function draw(e) {
     // 図形(AUB)が連結点対称
     if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
       const center = getCenter(isAorB);
-      const circle = createCircle({cx: center.x / 2.0, cy: center.y / 2.0, r: 7});
+      const circle = createCircle({cx: center.x / 2, cy: center.y / 2, r: 7});
       circle.setAttribute('fill', 'darkviolet');
       g.appendChild(circle);
     }
@@ -402,7 +402,7 @@ function draw(e) {
       const centerB = getCenter(isB);
       const centerAorB = getCenter(isAorB);
       const r = centerB.x == centerAorB.x && centerB.y == centerAorB.y ? 10 : 5;
-      const circle = createCircle({cx: centerB.x / 2.0, cy: centerB.y / 2.0, r: r});
+      const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: r});
       circle.setAttribute('fill', 'none');
       circle.setAttribute('stroke', 'blue');
       g.appendChild(circle);
@@ -446,10 +446,8 @@ function getCurXY(e) {
 // 中心付近の枠内およびその周上か否か。
 function isInsideCenterArea(x, y)
 {
-  if (x < width) return false;
-  if (2 * width <= x) return false;
-  if (y < height) return false;
-  if (2 * height <= y) return false;
+  if (x < width || 2 * width <= x) return false;
+  if (y < height || 2 * height <= y) return false;
   return true;
 }
 
@@ -473,13 +471,16 @@ function pointerdown(e) {
   if (touches !== undefined && touches.length > 1) {
     return;
   }
-  if (isTouchScreenNearEdge(e)) return;
+  if (isTouchScreenNearEdge(e)) {
+    draw(e);
+    return;
+  }
   e.preventDefault();
 
   if (mode == Mode.size) {
     const cursorPos = getCursorPos(elemSvg, e);
-    const x = cursorPos.x - 0.5 * blockSize * width3;
-    const y = cursorPos.y - 0.5 * blockSize * height3;
+    const x = cursorPos.x - blockSize * width3 / 2;
+    const y = cursorPos.y - blockSize * height3 / 2;
     if (Math.abs(x) / width + Math.abs(y) / height > blockSize) {
       return;
     }
@@ -489,13 +490,13 @@ function pointerdown(e) {
     let newWidth = width;
     let newHeight = height;
     if (Math.abs(x) / width > Math.abs(y) / height) {
-      const dd = Math.abs(x) > 0.5 * blockSize * width ? 1 : -1;
+      const dd = Math.abs(x) > blockSize * width / 2 ? 1 : -1;
       if (width != 1 || dd != -1) {
         newWidth += dd;
         if (x < 0) dx += dd;
       }
     } else {
-      const dd = Math.abs(y) > 0.5 * blockSize * height ? 1 : -1;
+      const dd = Math.abs(y) > blockSize * height / 2 ? 1 : -1;
       if (height != 1 || dd != -1) {
         newHeight += dd;
         if (y < 0) dy += dd;
@@ -513,15 +514,11 @@ function pointerdown(e) {
     return;
   }
 
-  if (mode == Mode.normal) {
-    drawingState = blocks[cur.y][cur.x] == stateA ? stateNone : stateA;
-  } else {
-    drawingState = blocks[cur.y][cur.x] == stateB ? stateNone : stateB;
-  }
+  const targetState = mode == Mode.normal ? stateA : stateB;
+  drawingState = blocks[cur.y][cur.x] == targetState ? stateNone : targetState;
   drawingFlag = true;
 
-  prev.x = -1;
-  prev.y = -1;
+  prev = {x: -1, y: -1};
   pointermove(e);
 }
 
@@ -541,12 +538,8 @@ function pointermove(e) {
   if (cur.x == prev.x && cur.y == prev.y) return;
   prev.x = cur.x;
   prev.y = cur.y;
-  if (mode == Mode.normal) {
+  if (mode == Mode.normal || blocks[cur.y][cur.x] != stateA) {
     blocks[cur.y][cur.x] = drawingState;
-  } else {
-    if (blocks[cur.y][cur.x] != stateA) {
-      blocks[cur.y][cur.x] = drawingState;
-    }
   }
 
   update(e);
