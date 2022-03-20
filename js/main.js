@@ -148,12 +148,12 @@ function applyBlockStr(e, str, dx, dy)
 
 function setSize(w, h) {
   width = w;
-  height = h;
   width2 = w * 2;
-  height2 = h * 2;
   width3 = w * 3;
-  height3 = h * 3;
   width4 = w * 4;
+  height = h;
+  height2 = h * 2;
+  height3 = h * 3;
   height4 = h * 4;
   elemSvg.setAttribute('width', blockSize * width3);
   elemSvg.setAttribute('height', blockSize * height3);
