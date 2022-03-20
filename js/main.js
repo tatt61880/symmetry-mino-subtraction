@@ -12,6 +12,8 @@ let width2;
 let height2;
 let width3;
 let height3;
+let width4;
+let height4;
 const blockSize = 28;
 
 const stateNone = 0;
@@ -151,6 +153,8 @@ function setSize(w, h) {
   height2 = h * 2;
   width3 = w * 3;
   height3 = h * 3;
+  width4 = w * 4;
+  height4 = h * 4;
   elemSvg.setAttribute('width', blockSize * width3);
   elemSvg.setAttribute('height', blockSize * height3);
   elemWidth.value = w;
@@ -824,8 +828,8 @@ function update(e) {
   case 0:
     break;
   case 1:
-    for (let cy = height * 2; cy <= height2 * 2; ++cy) {
-      for (let cx = width * 2; cx <= width2 * 2; ++cx) {
+    for (let cy = height2; cy <= height4; ++cy) {
+      for (let cx = width2; cx <= width4; ++cx) {
         if (cx == centerOfA.x || cy == centerOfA.y) {
           points.push({x: cx, y: cy});
         }
@@ -833,8 +837,8 @@ function update(e) {
     }
     break;
   default:
-    for (let cy = height * 2; cy <= height2 * 2; ++cy) {
-      for (let cx = width * 2; cx <= width2 * 2; ++cx) {
+    for (let cy = height2; cy <= height4; ++cy) {
+      for (let cx = width2; cx <= width4; ++cx) {
         const isCenterOfA = cx == centerOfA.x && cy == centerOfA.y;
         if (hasSolution(cx, cy, isCenterOfA)) {
           points.push({x: cx, y: cy});
