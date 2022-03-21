@@ -660,15 +660,10 @@ function pointSymmetryA(firstB, cx, cy) {
   for (let y = height; y < height2; ++y) {
     for (let x = width; x < width2; ++x) {
       if (states[y][x] == stateA) {
+        // 点(x, y)を点(cx, cy)に対して点対称操作した位置にある点(bx, by)
         const bx = cx - x - 1;
         const by = cy - y - 1;
-
-        // 処理速度等の都合から、あらかじめ用意したエリア外にはみでる場合は不適切とします。
-        if (bx < 0) return false;
-        if (by < 0) return false;
-        if (bx >= width3) return false;
-        if (by >= height3) return false;
-
+        // 点(x, y)と点(cx, cy)は中央付近の枠内にある前提。⇒点(bx, by)はあらかじめ用意したエリア外にはみ出ない。
         if (states[by][bx] == stateNone) {
           states[by][bx] = stateB;
           firstB.push({x: bx, y: by});
@@ -676,17 +671,17 @@ function pointSymmetryA(firstB, cx, cy) {
       }
     }
   }
-  return true;
 }
 
 // 図形Bに最後に追加された点の配列newBを点(cx, cy)で点対称になるようにしたとき  元の図形と重なっていない部分を図形Bとする。
 function pointSymmetry(newB, cx, cy, checkFlag) {
   const nextB = [];
   for (const p of newB) {
+    // 点pを点(cx, cy)に対して点対称操作した位置にある点(bx, by)
     const bx = cx - p.x - 1;
     const by = cy - p.y - 1;
 
-    // 処理速度等の都合から、あらかじめ用意したエリア外にはみでる場合は不適切とします。
+    // 処理速度等の都合から、点(bx, by)があらかじめ用意したエリア外にはみ出る場合は不適切とします。
     if (bx < 0) return undefined;
     if (by < 0) return undefined;
     if (bx >= width3) return undefined;
@@ -734,15 +729,13 @@ function isOk() {
 function hasSolution(cx, cy, isCenterOfA) {
   removeB();
   const firstB = [];
-  if (!pointSymmetryA(firstB, cx, cy)) return false;
+  pointSymmetryA(firstB, cx, cy);
   if (isCenterOfA) {
     if (firstB.length == 0) {
       if (isPointSymmetry(isA)) return true;
     } else {
       if (isOk()) return true;
     }
-  } else {
-    if (firstB.length == 0) return false;
   }
 
   let bMinX = width3;
