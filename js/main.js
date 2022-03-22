@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.21';
+const version = 'Version: 2022.03.23';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -311,8 +311,8 @@ function draw(e) {
   const g = document.createElementNS(SVG_NS, 'g');
 
   // ポインタの位置に応じて図形Bをセットし直す。
-  let selectedPos;
-  let centerOfB = undefined;
+  let selectedPoint;
+  let centerB = undefined;
   if (mode != Mode.manual) {
     removeB();
     if (mode != Mode.size && points.length != 0) {
@@ -322,14 +322,16 @@ function draw(e) {
         let dist = (cursorPos.x - blockSize * point.x / 2) ** 2 + (cursorPos.y - blockSize * point.y / 2) ** 2;
         if (minDist == -1 || dist < minDist) {
           minDist = dist;
-          selectedPos = point;
+          selectedPoint = point;
         }
       }
-      const centerOfA = getCenter(isA);
-      const isCenterOfA = selectedPos.x == centerOfA.x && selectedPos.y == centerOfA.y;
-      hasSolution(selectedPos.x, selectedPos.y, isCenterOfA);
-      if (count(isB)) {
-        centerOfB = getCenter(isB);
+      if (!(selectedPoint.x == selectedPoint.xb && selectedPoint.y == selectedPoint.yb)) {
+        const firstB = [];
+        pointSymmetryA(firstB, selectedPoint.x, selectedPoint.y);
+        searchSolutionSub(selectedPoint.x, selectedPoint.y, selectedPoint.xb, selectedPoint.yb, firstB);
+        if (count(isB)) {
+          centerB = getCenter(isB);
+        }
       }
     }
   }
@@ -393,15 +395,15 @@ function draw(e) {
 
   // 点
   for (const point of points) {
-    const isSelected = point === selectedPos;
+    const isSelected = point === selectedPoint;
     const r = isSelected ? pointSizeSelected : pointSizeNormal;
     const circle = createCircle({cx: point.x / 2, cy: point.y / 2, r: r});
     circle.setAttribute('fill', isSelected ? pointColorSelected : pointColorNormal);
     g.appendChild(circle);
   }
 
-  if (centerOfB !== undefined) {
-    const circle = createCircle({cx: centerOfB.x / 2, cy: centerOfB.y / 2, r: pointSizeCenterOfB});
+  if (centerB !== undefined) {
+    const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: pointSizeCenterOfB});
     circle.setAttribute('fill', 'none');
     circle.setAttribute('stroke', pointColorCenterOfB);
     g.appendChild(circle);
@@ -421,7 +423,7 @@ function draw(e) {
 
     // 図形Bが連結点対称
     if (count(isB) != 0 && isPointSymmetry(isB) && isConnected(isB)) {
-      const centerB = getCenter(isB);
+      centerB = getCenter(isB);
       const centerAorB = getCenter(isAorB);
       let r;
       if (flag && centerB.x == centerAorB.x && centerB.y == centerAorB.y) {
@@ -725,16 +727,39 @@ function isOk() {
   return true;
 }
 
+function searchSolutionSub(cx, cy, cbx, cby, firstB) {
+  removeB();
+  addB(firstB);
+  let newB = firstB;
+  for (;;) {
+    newB = pointSymmetry(newB, cbx, cby, true);
+    if (newB === undefined) return false;
+    if (newB.length == 0) break;
+
+    newB = pointSymmetry(newB, cx, cy, false);
+    if (newB === undefined) return false;
+    if (newB.length == 0) break;
+  }
+  return isOk();
+}
+
 // 点(cx, cy)を図形(AUB)の点対称中心とする解が存在するか否か。
-function hasSolution(cx, cy, isCenterOfA) {
+function searchSolution(cx, cy, isCenterA) {
   removeB();
   const firstB = [];
   pointSymmetryA(firstB, cx, cy);
-  if (isCenterOfA) {
+  if (isCenterA) {
     if (firstB.length == 0) {
-      if (isPointSymmetry(isA)) return true;
+      if (isPointSymmetry(isA)) {
+        points.push({x: cx, y: cy, xb: cx, yb: cy});
+        return true;
+      }
     } else {
-      if (isOk()) return true;
+      if (isOk()) {
+        const cb = getCenter(isB);
+        points.push({x: cx, y: cy, xb: cb.x, yb: cb.y});
+        return true;
+      }
     }
   }
 
@@ -751,28 +776,10 @@ function hasSolution(cx, cy, isCenterOfA) {
 
   for (let cby = bMaxY + 1; cby <= bMinY + height3; ++cby) {
     for (let cbx = bMaxX + 1; cbx <= bMinX + width3; ++cbx) {
-      removeB();
-      addB(firstB);
-      let newB = firstB;
-      let flag = true;
-      for (;;) {
-        newB = pointSymmetry(newB, cbx, cby, true);
-        if (newB === undefined) {
-          flag = false;
-          break;
-        }
-        if (newB.length == 0) break;
-
-        newB = pointSymmetry(newB, cx, cy, false);
-        if (newB === undefined) {
-          flag = false;
-          break;
-        }
-        if (newB.length == 0) break;
+      if (searchSolutionSub(cx, cy, cbx, cby, firstB)) {
+        points.push({x: cx, y: cy, xb: cbx, yb: cby});
+        return true;
       }
-      if (!flag) continue;
-      if (!isOk()) continue;
-      return true;
     }
   }
 }
@@ -815,27 +822,29 @@ function update(e) {
   }
   const startTime = Date.now();
   points = [];
-  const centerOfA = getCenter(isA);
+  const centerA = getCenter(isA);
   const countA = count(isA);
   switch (countA) {
   case 0:
     break;
   case 1:
+    points.push({x: centerA.x, y: centerA.y, xb: centerA.x, yb: centerA.y});
+    for (let cx = width2; cx <= width4; ++cx) {
+      if (cx == centerA.x) continue;
+      const dx = cx < centerA.x ? -1 : 1;
+      points.push({x: cx, y: centerA.y, xb: cx + dx, yb: centerA.y});
+    }
     for (let cy = height2; cy <= height4; ++cy) {
-      for (let cx = width2; cx <= width4; ++cx) {
-        if (cx == centerOfA.x || cy == centerOfA.y) {
-          points.push({x: cx, y: cy});
-        }
-      }
+      if (cy == centerA.y) continue;
+      const dy = cy < centerA.y ? -1 : 1;
+      points.push({x: centerA.x, y: cy, xb: centerA.x, yb: cy + dy});
     }
     break;
   default:
     for (let cy = height2; cy <= height4; ++cy) {
       for (let cx = width2; cx <= width4; ++cx) {
-        const isCenterOfA = cx == centerOfA.x && cy == centerOfA.y;
-        if (hasSolution(cx, cy, isCenterOfA)) {
-          points.push({x: cx, y: cy});
-        }
+        const isCenterA = cx == centerA.x && cy == centerA.y;
+        searchSolution(cx, cy, isCenterA);
       }
     }
     break;
