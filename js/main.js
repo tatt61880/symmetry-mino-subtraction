@@ -466,7 +466,7 @@ function clamp(val, min, max) {
   return val;
 }
 
-// 座標をセットする。
+// カーソル位置の座標を得る
 function getCurXY(e) {
   const cursorPos = getCursorPos(elemSvg, e);
   const x = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
