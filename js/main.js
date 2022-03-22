@@ -319,16 +319,16 @@ function draw(e) {
       const cursorPos = getCursorPos(elemSvg, e);
       let minDist = -1;
       for (const point of points) {
-        let dist = (cursorPos.x - blockSize * point.x / 2) ** 2 + (cursorPos.y - blockSize * point.y / 2) ** 2;
+        let dist = (cursorPos.x - blockSize * point.cx / 2) ** 2 + (cursorPos.y - blockSize * point.cy / 2) ** 2;
         if (minDist == -1 || dist < minDist) {
           minDist = dist;
           selectedPoint = point;
         }
       }
-      if (!(selectedPoint.x == selectedPoint.xb && selectedPoint.y == selectedPoint.yb)) {
+      if (!(selectedPoint.cx == selectedPoint.cbx && selectedPoint.cy == selectedPoint.cby)) {
         const firstB = [];
-        pointSymmetryA(firstB, selectedPoint.x, selectedPoint.y);
-        searchSolutionSub(selectedPoint.x, selectedPoint.y, selectedPoint.xb, selectedPoint.yb, firstB);
+        pointSymmetryA(firstB, selectedPoint.cx, selectedPoint.cy);
+        searchSolutionSub(selectedPoint.cx, selectedPoint.cy, selectedPoint.cbx, selectedPoint.cby, firstB);
         if (count(isB)) {
           centerB = getCenter(isB);
         }
@@ -397,7 +397,7 @@ function draw(e) {
   for (const point of points) {
     const isSelected = point === selectedPoint;
     const r = isSelected ? pointSizeSelected : pointSizeNormal;
-    const circle = createCircle({cx: point.x / 2, cy: point.y / 2, r: r});
+    const circle = createCircle({cx: point.cx / 2, cy: point.cy / 2, r: r});
     circle.setAttribute('fill', isSelected ? pointColorSelected : pointColorNormal);
     g.appendChild(circle);
   }
@@ -751,13 +751,13 @@ function searchSolution(cx, cy, isCenterA) {
   if (isCenterA) {
     if (firstB.length == 0) {
       if (isPointSymmetry(isA)) {
-        points.push({x: cx, y: cy, xb: cx, yb: cy});
+        points.push({cx: cx, cy: cy, cbx: cx, cby: cy});
         return true;
       }
     } else {
       if (isOk()) {
         const cb = getCenter(isB);
-        points.push({x: cx, y: cy, xb: cb.x, yb: cb.y});
+        points.push({cx: cx, cy: cy, cbx: cb.x, cby: cb.y});
         return true;
       }
     }
@@ -777,7 +777,7 @@ function searchSolution(cx, cy, isCenterA) {
   for (let cby = bMaxY + 1; cby <= bMinY + height3; ++cby) {
     for (let cbx = bMaxX + 1; cbx <= bMinX + width3; ++cbx) {
       if (searchSolutionSub(cx, cy, cbx, cby, firstB)) {
-        points.push({x: cx, y: cy, xb: cbx, yb: cby});
+        points.push({cx: cx, cy: cy, cbx: cbx, cby: cby});
         return true;
       }
     }
@@ -828,16 +828,16 @@ function update(e) {
   case 0:
     break;
   case 1:
-    points.push({x: centerA.x, y: centerA.y, xb: centerA.x, yb: centerA.y});
+    points.push({cx: centerA.x, cy: centerA.y, cbx: centerA.x, cby: centerA.y});
     for (let cx = width2; cx <= width4; ++cx) {
       if (cx == centerA.x) continue;
       const dx = cx < centerA.x ? -1 : 1;
-      points.push({x: cx, y: centerA.y, xb: cx + dx, yb: centerA.y});
+      points.push({cx: cx, cy: centerA.y, cbx: cx + dx, cby: centerA.y});
     }
     for (let cy = height2; cy <= height4; ++cy) {
       if (cy == centerA.y) continue;
       const dy = cy < centerA.y ? -1 : 1;
-      points.push({x: centerA.x, y: cy, xb: centerA.x, yb: cy + dy});
+      points.push({cx: centerA.x, cy: cy, cbx: centerA.x, cby: cy + dy});
     }
     break;
   default:
