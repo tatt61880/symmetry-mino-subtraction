@@ -338,12 +338,15 @@ function draw(e) {
 
   // 図形の描画
   {
+    // 背景
     {
       const rect = createRect({x: 0, y: 0, width: width3, height: height3});
       rect.setAttribute('fill', colorNone);
       rect.setAttribute('stroke', 'none');
       g.appendChild(rect);
     }
+
+    // サイズ変更モード
     if (mode == Mode.size) {
       const polygon = document.createElementNS(SVG_NS, 'polygon');
       const cx = blockSize * width3 / 2;
@@ -357,6 +360,7 @@ function draw(e) {
       g.appendChild(polygon);
     }
 
+    // 図形
     const isX = mode == Mode.size ? isA : isAorB;
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
@@ -414,8 +418,8 @@ function draw(e) {
 
     // 図形(AUB)が連結点対称
     if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
-      const center = getCenter(isAorB);
-      const circle = createCircle({cx: center.x / 2, cy: center.y / 2, r: pointSizeSelected});
+      const centerAorB = getCenter(isAorB);
+      const circle = createCircle({cx: centerAorB.x / 2, cy: centerAorB.y / 2, r: pointSizeSelected});
       circle.setAttribute('fill', pointColorSelected);
       g.appendChild(circle);
       flag = true;
@@ -425,11 +429,9 @@ function draw(e) {
     if (count(isB) != 0 && isPointSymmetry(isB) && isConnected(isB)) {
       centerB = getCenter(isB);
       const centerAorB = getCenter(isAorB);
-      let r;
+      let r = pointSizeSelected;
       if (flag && centerB.x == centerAorB.x && centerB.y == centerAorB.y) {
-        r = pointSizeSelected + 5;
-      } else {
-        r = pointSizeCenterOfB;
+        r += 5;
       }
       const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: r});
       circle.setAttribute('fill', 'none');
