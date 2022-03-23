@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.23';
+const version = 'Version: 2022.03.24';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -305,6 +305,7 @@ function createRect(param) {
   return rect;
 }
 
+let step = 0;
 function draw(e) {
   while (elemSvg.firstChild) {
     elemSvg.removeChild(elemSvg.firstChild);
@@ -314,16 +315,18 @@ function draw(e) {
   // ポインタの位置に応じて図形Bをセットし直す。
   let selectedPoint;
   let centerB = undefined;
+  const rnd = Math.floor(step / 10); // 適当に決めた値。
+  step = (step + 1) % 10000;
   if (mode != Mode.manual) {
     removeB();
     if (mode != Mode.size && points.length != 0) {
       const cursorPos = getCursorPos(elemSvg, e);
       let minDist = -1;
       for (const point of points) {
-        let dist = (cursorPos.x - blockSize * point.cx / 2) ** 2 + (cursorPos.y - blockSize * point.cy / 2) ** 2;
+        let dist = (cursorPos.x - blockSize * point[0].cx / 2) ** 2 + (cursorPos.y - blockSize * point[0].cy / 2) ** 2;
         if (minDist == -1 || dist < minDist) {
           minDist = dist;
-          selectedPoint = point;
+          selectedPoint = point[rnd % point.length];
         }
       }
       if (!(selectedPoint.cx == selectedPoint.cbx && selectedPoint.cy == selectedPoint.cby)) {
@@ -400,10 +403,16 @@ function draw(e) {
 
   // 点
   for (const point of points) {
-    const isSelected = point === selectedPoint;
+    const isSelected = point[rnd % point.length] === selectedPoint;
     const r = isSelected ? sizeSelected : sizeNormal;
-    const circle = createCircle({cx: point.cx / 2, cy: point.cy / 2, r: r});
-    circle.setAttribute('fill', isSelected ? colorSelected : colorNormal);
+    const circle = createCircle({cx: point[0].cx / 2, cy: point[0].cy / 2, r: r});
+    const color = isSelected ? colorSelected : colorNormal;
+    circle.setAttribute('fill', color);
+    if (point.length != 1) {
+      circle.setAttribute('stroke-width', isSelected ? '6' : '5');
+      circle.setAttribute('stroke-dasharray', '1, 1');
+      circle.setAttribute('stroke', color);
+    }
     g.appendChild(circle);
   }
 
@@ -746,6 +755,14 @@ function searchSolutionSub(cx, cy, cbx, cby, firstB) {
   return isOk();
 }
 
+function addPoint(cx, cy, cbx, cby) {
+  if (points.length != 0 && cx == points[points.length - 1][0].cx && cy == points[points.length - 1][0].cy) {
+    points[points.length - 1].push({cx: cx, cy: cy, cbx: cbx, cby: cby});
+    return;
+  }
+  points.push([{cx: cx, cy: cy, cbx: cbx, cby: cby}]);
+}
+
 // 点(cx, cy)を図形(AUB)の点対称中心とする解が存在するか否か。
 function searchSolution(cx, cy, isCenterA) {
   removeB();
@@ -754,13 +771,7 @@ function searchSolution(cx, cy, isCenterA) {
   if (isCenterA) {
     if (firstB.length == 0) {
       if (isPointSymmetry(isA)) {
-        points.push({cx: cx, cy: cy, cbx: cx, cby: cy});
-        return true;
-      }
-    } else {
-      if (isOk()) {
-        const cb = getCenter(isB);
-        points.push({cx: cx, cy: cy, cbx: cb.x, cby: cb.y});
+        addPoint(cx, cy, cx, cy);
         return true;
       }
     }
@@ -780,8 +791,7 @@ function searchSolution(cx, cy, isCenterA) {
   for (let cby = bMaxY + 1; cby <= bMinY + height3; ++cby) {
     for (let cbx = bMaxX + 1; cbx <= bMinX + width3; ++cbx) {
       if (searchSolutionSub(cx, cy, cbx, cby, firstB)) {
-        points.push({cx: cx, cy: cy, cbx: cbx, cby: cby});
-        return true;
+        addPoint(cx, cy, cbx, cby);
       }
     }
   }
@@ -831,16 +841,16 @@ function update(e) {
   case 0:
     break;
   case 1:
-    points.push({cx: centerA.x, cy: centerA.y, cbx: centerA.x, cby: centerA.y});
+    addPoint(centerA.x, centerA.y, centerA.x, centerA.y);
     for (let cx = width2; cx <= width4; ++cx) {
       if (cx == centerA.x) continue;
       const dx = cx < centerA.x ? -1 : 1;
-      points.push({cx: cx, cy: centerA.y, cbx: cx + dx, cby: centerA.y});
+      addPoint(cx, centerA.y, cx + dx, centerA.y);
     }
     for (let cy = height2; cy <= height4; ++cy) {
       if (cy == centerA.y) continue;
       const dy = cy < centerA.y ? -1 : 1;
-      points.push({cx: centerA.x, cy: cy, cbx: centerA.x, cby: cy + dy});
+      addPoint(centerA.x, cy, centerA.x, cy + dy);
     }
     break;
   default:
