@@ -5,6 +5,9 @@ const debug = false;
 window.addEventListener('load', init, false);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+let prev = {x: -1, y: -1};
+let drawingState;
 let drawingFlag = false;
 let width = 6;
 let height = 6;
@@ -14,7 +17,6 @@ let width3;
 let height3;
 let width4;
 let height4;
-const blockSize = 28;
 
 const stateNone = 0;
 const stateA = 1;
@@ -29,13 +31,15 @@ const colorSizeMode = '#ffffaa';
 
 const colorLine = '#333';
 
-const pointSizeNormal = 3;
-const pointSizeSelected = 6;
-const pointSizeCenterOfB = 6;
+const colorNormal = 'red';
+const colorSelected = 'darkviolet';
+const colorCenterB = 'blue';
 
-const pointColorNormal = 'red';
-const pointColorSelected = 'darkviolet';
-const pointColorCenterOfB = 'blue';
+const sizeNormal = 3;
+const sizeSelected = 6;
+const sizeCenterB = 6;
+
+const blockSize = 28;
 
 const dys = [1, 0, -1, 0];
 const dxs = [0, 1, 0, -1];
@@ -59,9 +63,6 @@ let elemSvg;
 let elemUrlInfo;
 let elemModeNameInfo;
 let elemModeInfo;
-
-let prev = {x: -1, y: -1};
-let drawingState;
 
 function analyzeUrl() {
   const res = {
@@ -400,16 +401,16 @@ function draw(e) {
   // 点
   for (const point of points) {
     const isSelected = point === selectedPoint;
-    const r = isSelected ? pointSizeSelected : pointSizeNormal;
+    const r = isSelected ? sizeSelected : sizeNormal;
     const circle = createCircle({cx: point.cx / 2, cy: point.cy / 2, r: r});
-    circle.setAttribute('fill', isSelected ? pointColorSelected : pointColorNormal);
+    circle.setAttribute('fill', isSelected ? colorSelected : colorNormal);
     g.appendChild(circle);
   }
 
   if (centerB !== undefined) {
-    const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: pointSizeCenterOfB});
+    const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: sizeCenterB});
     circle.setAttribute('fill', 'none');
-    circle.setAttribute('stroke', pointColorCenterOfB);
+    circle.setAttribute('stroke', colorCenterB);
     g.appendChild(circle);
   }
 
@@ -419,8 +420,8 @@ function draw(e) {
     // 図形(AUB)が連結点対称
     if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
       const centerAorB = getCenter(isAorB);
-      const circle = createCircle({cx: centerAorB.x / 2, cy: centerAorB.y / 2, r: pointSizeSelected});
-      circle.setAttribute('fill', pointColorSelected);
+      const circle = createCircle({cx: centerAorB.x / 2, cy: centerAorB.y / 2, r: sizeSelected});
+      circle.setAttribute('fill', colorSelected);
       g.appendChild(circle);
       flag = true;
     }
@@ -429,13 +430,13 @@ function draw(e) {
     if (count(isB) != 0 && isPointSymmetry(isB) && isConnected(isB)) {
       centerB = getCenter(isB);
       const centerAorB = getCenter(isAorB);
-      let r = pointSizeSelected;
+      let r = sizeSelected;
       if (flag && centerB.x == centerAorB.x && centerB.y == centerAorB.y) {
         r += 5;
       }
       const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: r});
       circle.setAttribute('fill', 'none');
-      circle.setAttribute('stroke', pointColorCenterOfB);
+      circle.setAttribute('stroke', colorCenterB);
       g.appendChild(circle);
     }
   }
