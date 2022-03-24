@@ -182,7 +182,7 @@ function updateModeInfo()
 点対称連結ポリオミノにできる場合、<br>
 その時の中心点を示します。<br>
 <br>
-探索手法の詳細は<a href="https://github.com/tatt61880/symmetry-mino-subtraction#readme">GitHubのreadme</a>をご覧ください。`;
+探索手法の概要は<a href="https://github.com/tatt61880/symmetry-mino-subtraction#readme">GitHubのreadme</a>をご覧ください。`;
     break;
   case Mode.size:
     elemModeNameInfo.innerHTML = 'サイズ変更モード';
