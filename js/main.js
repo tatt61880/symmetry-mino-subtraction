@@ -221,6 +221,68 @@ function toggleSizeMode(e)
   draw(e);
 }
 
+// デバッグ, 解析用
+let targetElem;
+function debugDraw(states, cx, cy, cbx, cby)
+{
+  const br = document.createElement('br');
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('width', `${blockSize * width3}`);
+  svg.setAttribute('height', `${blockSize * height3}`);
+  const g = document.createElementNS(SVG_NS, 'g');
+  for (let y = 0; y < height3; ++y) {
+    for (let x = 0; x < width3; ++x) {
+      if (states[y][x] != stateNone) {
+        const rect = createRect({x: x, y: y, width: 1, height: 1});
+        rect.setAttribute('fill', states[y][x] == stateA ? colorA : colorB);
+        rect.setAttribute('stroke', 'none');
+        g.appendChild(rect);
+      }
+    }
+  }
+  // 横線
+  for (let y = 0; y <= height3; ++y) {
+    const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
+    line.setAttribute('stroke', colorLine);
+    line.setAttribute('stroke-dasharray', '1, 3');
+    g.appendChild(line);
+  }
+  // 縦線
+  for (let x = 0; x <= width3; ++x) {
+    const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
+    line.setAttribute('stroke', colorLine);
+    line.setAttribute('stroke-dasharray', '1, 3');
+    g.appendChild(line);
+  }
+  // 中央部
+  if (mode != Mode.manual) {
+    const rect = createRect({x: width, y: height, width: width, height: height});
+    rect.setAttribute('fill', 'none');
+    rect.setAttribute('stroke', colorLine);
+    rect.setAttribute('stroke-dasharray', '2, 2');
+    g.appendChild(rect);
+  }
+  // 全体中央
+  {
+    const circle = createCircle({cx: cx / 2, cy: cy / 2, r: sizeSelected});
+    circle.setAttribute('fill', colorSelected);
+    g.appendChild(circle);
+  }
+  // 水色中央
+  {
+    const circle = createCircle({cx: cbx / 2, cy: cby / 2, r: sizeCenterB});
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', colorCenterB);
+    g.appendChild(circle);
+  }
+
+  svg.appendChild(g);
+  if (targetElem === undefined) targetElem = elemSvg;
+  targetElem.insertAdjacentElement('afterend', svg);
+  targetElem.insertAdjacentElement('afterend', br);
+  targetElem = svg;
+}
+
 function init(e) {
   document.getElementById('versionInfo').innerText = version;
 
@@ -795,6 +857,7 @@ function searchSolution(cx, cy, isCenterA) {
       if (searchSolutionSub(cx, cy, cbx, cby, firstB)) {
         addPoint(cx, cy, cbx, cby);
       }
+      // debugDraw(states, cx, cy, cbx, cby);
     }
   }
 }
