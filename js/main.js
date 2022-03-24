@@ -180,7 +180,9 @@ function updateModeInfo()
 点対称連結ポリオミノ(水色)を足すことで、<br>
 全体の図形(ピンク+水色)を<br>
 点対称連結ポリオミノにできる場合、<br>
-その時の中心点を示します。`;
+その時の中心点を示します。<br>
+<br>
+探索手法の詳細は<a href="https://github.com/tatt61880/symmetry-mino-subtraction#readme">GitHubのreadme</a>をご覧ください。`;
     break;
   case Mode.size:
     elemModeNameInfo.innerHTML = 'サイズ変更モード';
