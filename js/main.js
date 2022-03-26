@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.24';
+const version = 'Version: 2022.03.26';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -223,7 +223,7 @@ function toggleSizeMode(e)
 
 // デバッグ, 解析用
 let targetElem;
-function debugDraw(states, cx, cy, cbx, cby)
+function debugDraw(states, ps)
 {
   const br = document.createElement('br');
   const svg = document.createElementNS(SVG_NS, 'svg');
@@ -240,42 +240,13 @@ function debugDraw(states, cx, cy, cbx, cby)
       }
     }
   }
-  // 横線
-  for (let y = 0; y <= height3; ++y) {
-    const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
-    line.setAttribute('stroke', colorLine);
-    line.setAttribute('stroke-dasharray', '1, 3');
-    g.appendChild(line);
-  }
-  // 縦線
-  for (let x = 0; x <= width3; ++x) {
-    const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
-    line.setAttribute('stroke', colorLine);
-    line.setAttribute('stroke-dasharray', '1, 3');
-    g.appendChild(line);
-  }
-  // 中央部
-  if (mode != Mode.manual) {
-    const rect = createRect({x: width, y: height, width: width, height: height});
-    rect.setAttribute('fill', 'none');
-    rect.setAttribute('stroke', colorLine);
-    rect.setAttribute('stroke-dasharray', '2, 2');
-    g.appendChild(rect);
-  }
-  // 全体中央
-  {
-    const circle = createCircle({cx: cx / 2, cy: cy / 2, r: sizeSelected});
-    circle.setAttribute('fill', colorSelected);
+  drawFrame(g);
+  for (const p of ps) {
+    const circle = createCircle({cx: p.x / 2, cy: p.y / 2, r: p.r});
+    circle.setAttribute('fill', p.fill);
+    circle.setAttribute('stroke', p.stroke);
     g.appendChild(circle);
   }
-  // 水色中央
-  {
-    const circle = createCircle({cx: cbx / 2, cy: cby / 2, r: sizeCenterB});
-    circle.setAttribute('fill', 'none');
-    circle.setAttribute('stroke', colorCenterB);
-    g.appendChild(circle);
-  }
-
   svg.appendChild(g);
   if (targetElem === undefined) targetElem = elemSvg;
   targetElem.insertAdjacentElement('afterend', svg);
@@ -369,6 +340,31 @@ function createRect(param) {
   return rect;
 }
 
+function drawFrame(g) {
+  // 横線
+  for (let y = 0; y <= height3; ++y) {
+    const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
+    line.setAttribute('stroke', colorLine);
+    line.setAttribute('stroke-dasharray', '1, 3');
+    g.appendChild(line);
+  }
+  // 縦線
+  for (let x = 0; x <= width3; ++x) {
+    const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
+    line.setAttribute('stroke', colorLine);
+    line.setAttribute('stroke-dasharray', '1, 3');
+    g.appendChild(line);
+  }
+  // 中央部
+  if (mode != Mode.manual) {
+    const rect = createRect({x: width, y: height, width: width, height: height});
+    rect.setAttribute('fill', 'none');
+    rect.setAttribute('stroke', colorLine);
+    rect.setAttribute('stroke-dasharray', '2, 2');
+    g.appendChild(rect);
+  }
+}
+
 let step = 0;
 function draw(e) {
   while (elemSvg.firstChild) {
@@ -442,42 +438,38 @@ function draw(e) {
     }
   }
 
-  // 横線
-  for (let y = 0; y <= height3; ++y) {
-    const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
-    line.setAttribute('stroke', colorLine);
-    line.setAttribute('stroke-dasharray', '1, 3');
-    g.appendChild(line);
-  }
-  // 縦線
-  for (let x = 0; x <= width3; ++x) {
-    const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
-    line.setAttribute('stroke', colorLine);
-    line.setAttribute('stroke-dasharray', '1, 3');
-    g.appendChild(line);
-  }
-  // 中央部
-  if (mode != Mode.manual) {
-    const rect = createRect({x: width, y: height, width: width, height: height});
-    rect.setAttribute('fill', 'none');
-    rect.setAttribute('stroke', colorLine);
-    rect.setAttribute('stroke-dasharray', '2, 2');
-    g.appendChild(rect);
-  }
+  drawFrame(g);
 
   // 点
   for (const point of points) {
     const isSelected = point[rnd % point.length] === selectedPoint;
-    const r = isSelected ? sizeSelected : sizeNormal;
-    const circle = createCircle({cx: point[0].cx / 2, cy: point[0].cy / 2, r: r});
     const color = isSelected ? colorSelected : colorNormal;
-    circle.setAttribute('fill', color);
-    if (point.length != 1) {
-      circle.setAttribute('stroke-width', isSelected ? '6' : '5');
-      circle.setAttribute('stroke-dasharray', '1, 1');
-      circle.setAttribute('stroke', color);
+    if (point[0].cx == point[0].cbx && point[0].cy == point[0].cby) {
+      const len = 0.35;
+      {
+        const line = createLine({x1: point[0].cx / 2.0 - len, y1: point[0].cy / 2.0, x2: point[0].cx / 2.0 + len, y2: point[0].cy / 2.0});
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', 2.0);
+        g.appendChild(line);
+      }
+      {
+        const line = createLine({x1: point[0].cx / 2.0, y1: point[0].cy / 2.0 - len, x2: point[0].cx / 2.0, y2: point[0].cy / 2.0 + len});
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', 2.0);
+        g.appendChild(line);
+      }
     }
-    g.appendChild(circle);
+    {
+      const r = isSelected ? sizeSelected : sizeNormal;
+      const circle = createCircle({cx: point[0].cx / 2, cy: point[0].cy / 2, r: r});
+      circle.setAttribute('fill', color);
+      if (point.length != 1) {
+        circle.setAttribute('stroke-width', isSelected ? '6' : '5');
+        circle.setAttribute('stroke-dasharray', '1, 1');
+        circle.setAttribute('stroke', color);
+      }
+      g.appendChild(circle);
+    }
   }
 
   if (centerB !== undefined) {
@@ -857,7 +849,11 @@ function searchSolution(cx, cy, isCenterA) {
       if (searchSolutionSub(cx, cy, cbx, cby, firstB)) {
         addPoint(cx, cy, cbx, cby);
       }
-      // debugDraw(states, cx, cy, cbx, cby);
+      /*
+      debugDraw(states,
+        [{x: cx, y: cy, r: sizeSelected, fill: colorSelected, stroke: 'none'},
+         {x: cbx, y: cby, r: sizeCenterB, fill: 'none', stroke: colorCenterB}]);
+      */
     }
   }
 }
