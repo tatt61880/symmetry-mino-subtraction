@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.26';
+const version = 'Version: 2022.03.27';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -340,6 +340,15 @@ function createRect(param) {
   return rect;
 }
 
+function createText(param) {
+  const text = document.createElementNS(SVG_NS, 'text');
+  text.setAttribute('x', blockSize * param.x);
+  text.setAttribute('y', blockSize * param.y);
+  text.setAttribute('font-size', `${Math.floor(blockSize * 0.4)}px`);
+  text.textContent = param.text;
+  return text;
+}
+
 function drawFrame(g) {
   // 横線
   for (let y = 0; y <= height3; ++y) {
@@ -469,6 +478,10 @@ function draw(e) {
         circle.setAttribute('stroke', color);
       }
       g.appendChild(circle);
+      if (point.length != 1) {
+        const text = createText({x: point[0].cx / 2 + 0.1, y: point[0].cy / 2 - 0.1, text: point.length});
+        g.appendChild(text);
+      }
     }
   }
 
