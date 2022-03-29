@@ -225,6 +225,7 @@ function toggleSizeMode(e)
 
 // デバッグ, 解析用
 let targetElem;
+/* eslint-disable-next-line no-unused-vars */
 function debugDraw(states, ps)
 {
   const br = document.createElement('br');
