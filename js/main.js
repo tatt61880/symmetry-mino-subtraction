@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.27';
+const version = 'Version: 2022.03.29';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -177,8 +177,8 @@ function updateModeInfo()
     elemModeNameInfo.innerHTML = '通常モード';
     elemModeInfo.innerHTML = `
 濃い点線枠内にポリオミノを描画してください。<br>
-点対称連結ポリオミノ(水色)を足すことで、<br>
-全体の図形(ピンク+水色)を<br>
+点対称連結ポリオミノ(<span class="aqua">水色</span>)を足すことで、<br>
+全体の図形(<span class="pink">ピンク</span>+<span class="aqua">水色</span>)を<br>
 点対称連結ポリオミノにできる場合、<br>
 その時の中心点を示します。<br>
 <br>
@@ -190,7 +190,9 @@ function updateModeInfo()
     break;
   case Mode.manual:
     elemModeNameInfo.innerHTML = '手動モード';
-    elemModeInfo.innerHTML = 'ピンクを固定し、水色を自ら描画するモードです。';
+    elemModeInfo.innerHTML = `
+<span class="pink">ピンク</span>を固定し、<span class="aqua">水色</span>を自ら描画するモードです。<br>
+<a href="${getUrlInfo()}">通常モードに戻す</a>`;
     break;
   }
 
@@ -585,7 +587,6 @@ function pointerdown(e) {
     draw(e);
     return;
   }
-  e.preventDefault();
 
   if (mode == Mode.size) {
     const cursorPos = getCursorPos(elemSvg, e);
@@ -594,6 +595,7 @@ function pointerdown(e) {
     if (Math.abs(x) / width + Math.abs(y) / height > blockSize) {
       return;
     }
+    e.preventDefault();
     const blockStr = getBlockStr();
     let dx = 0;
     let dy = 0;
@@ -617,6 +619,7 @@ function pointerdown(e) {
     draw(e);
     return;
   }
+  e.preventDefault();
 
   const cur = getCurXY(e);
   if (mode != Mode.manual && !isInsideCenterArea(cur.x, cur.y)) {
