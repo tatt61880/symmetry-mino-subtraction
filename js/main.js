@@ -122,8 +122,7 @@ function getBlockStr() {
   return res.replace(/-+$/, '');
 }
 
-function applyBlockStr(e, str, dx, dy)
-{
+function applyBlockStr(e, str, dx, dy) {
   for (let y = 0; y < height3; ++y) {
     states[y] = [];
     for (let x = 0; x < width3; ++x) {
@@ -170,8 +169,7 @@ function changeSize(e) {
   applyBlockStr(e, blockStr, 0, 0);
 }
 
-function updateModeInfo()
-{
+function updateModeInfo() {
   switch (mode) {
   case Mode.normal:
     elemModeNameInfo.innerHTML = '通常モード';
@@ -207,8 +205,7 @@ function updateModeInfo()
   elemSizeInfo.style.display = mode == Mode.manual ? 'none' : 'block';
 }
 
-function toggleSizeMode(e)
-{
+function toggleSizeMode(e) {
   e.preventDefault();
   switch (mode) {
   case Mode.normal:
@@ -226,8 +223,7 @@ function toggleSizeMode(e)
 // デバッグ, 解析用
 let targetElem;
 /* eslint-disable-next-line no-unused-vars */
-function debugDraw(states, ps)
-{
+function debugDraw(states, ps) {
   const br = document.createElement('br');
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('width', `${blockSize * width3}`);
@@ -387,8 +383,8 @@ function draw(e) {
   // ポインタの位置に応じて図形Bをセットし直す。
   let selectedPoint;
   let centerB = undefined;
-  const rnd = Math.floor(step / 10); // 適当に決めた値。
-  step = (step + 1) % 10000;
+  const counterId = Math.floor(step / 10); // 適当に決めた値。
+  step = (step + 1) % Number.MAX_SAFE_INTEGER;
   if (mode != Mode.manual) {
     removeB();
     if (mode != Mode.size && points.length != 0) {
@@ -398,7 +394,7 @@ function draw(e) {
         let dist = (cursorPos.x - blockSize * point[0].cx / 2) ** 2 + (cursorPos.y - blockSize * point[0].cy / 2) ** 2;
         if (minDist == -1 || dist < minDist) {
           minDist = dist;
-          selectedPoint = point[rnd % point.length];
+          selectedPoint = point[counterId % point.length];
         }
       }
       if (!(selectedPoint.cx == selectedPoint.cbx && selectedPoint.cy == selectedPoint.cby)) {
@@ -454,7 +450,7 @@ function draw(e) {
 
   // 点
   for (const point of points) {
-    const isSelected = point[rnd % point.length] === selectedPoint;
+    const isSelected = point[counterId % point.length] === selectedPoint;
     const color = isSelected ? colorSelected : colorNormal;
     if (point[0].cx == point[0].cbx && point[0].cy == point[0].cby) {
       const len = 0.35;
@@ -557,8 +553,7 @@ function getCurXY(e) {
 }
 
 // 中心付近の枠内およびその周上か否か。
-function isInsideCenterArea(x, y)
-{
+function isInsideCenterArea(x, y) {
   if (x < width || 2 * width <= x) return false;
   if (y < height || 2 * height <= y) return false;
   return true;
