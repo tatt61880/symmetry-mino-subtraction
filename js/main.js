@@ -1,5 +1,5 @@
 'use strict';
-const version = 'Version: 2022.03.29';
+const version = 'Version: 2022.04.13';
 
 const debug = false;
 window.addEventListener('load', init, false);
@@ -700,12 +700,13 @@ function isConnected(isX) {
   }
   let x0;
   let y0;
+  loop:
   for (let y = 0; y < height3; ++y) {
     for (let x = 0; x < width3; ++x) {
       if (isX(statesTemp[y][x])) {
         x0 = x;
         y0 = y;
-        break;
+        break loop;
       }
     }
   }
