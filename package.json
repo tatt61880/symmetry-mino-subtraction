@@ -1,17 +1,17 @@
 {
-  "name": "userscripts",
+  "name": "symmetry-mino-subtraction",
   "version": "1.0.0",
-  "description": "userscripts by tatt61880",
+  "description": "symmetry-mino-subtraction by tatt61880",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tatt61880/userscripts.git"
+    "url": "git+https://github.com/tatt61880/symmetry-mino-subtraction.git"
   },
   "author": "@tatt61880",
   "bugs": {
-    "url": "https://github.com/tatt61880/userscripts/issues"
+    "url": "https://github.com/tatt61880/symmetry-mino-subtraction/issues"
   },
-  "homepage": "https://github.com/tatt61880/userscripts#readme",
+  "homepage": "https://github.com/tatt61880/symmetry-mino-subtraction#readme",
   "scripts": {
     "lint": "eslint js\\*.js --fix"
   },
