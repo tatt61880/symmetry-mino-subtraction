@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  const version = 'Version: 2022.04.17';
+  const version = 'Version: 2022.04.29';
 
   const debug = false;
   window.addEventListener('load', init, false);
@@ -23,24 +23,34 @@
   const stateA = 1;
   const stateB = 2;
 
-  const colorNone = 'white';
-  const colorA = 'pink';
-  const colorB = 'aqua';
+  const color = {
+    // マス
+    none: 'white',
+    stateA: 'pink',
+    stateB: 'aqua',
 
-  const colorNormalMode = 'white';
-  const colorSizeMode = '#ffffaa';
+    // モード
+    normalMode: 'white',
+    sizeMode: '#ffffaa',
 
-  const colorLine = '#333';
+    // 線
+    line: '#333',
 
-  const colorNormal = 'red';
-  const colorSelected = 'darkviolet';
-  const colorCenterB = 'blue';
+    // 点
+    normal: 'red',
+    selected: 'darkviolet',
+    centerB: 'blue',
+  }
 
-  const sizeNormal = 3;
-  const sizeSelected = 6;
-  const sizeCenterB = 6;
+  const size = {
+    // マス
+    block: 28,
 
-  const blockSize = 28;
+    // 点
+    normal: 3,
+    selected: 6,
+    centerB: 6,
+  }
 
   const dys = [1, 0, -1, 0];
   const dxs = [0, 1, 0, -1];
@@ -156,8 +166,8 @@
     height2 = h * 2;
     height3 = h * 3;
     height4 = h * 4;
-    elemSvg.setAttribute('width', blockSize * width3);
-    elemSvg.setAttribute('height', blockSize * height3);
+    elemSvg.setAttribute('width', size.block * width3);
+    elemSvg.setAttribute('height', size.block * height3);
     elemWidth.value = w;
     elemHeight.value = h;
   }
@@ -196,10 +206,10 @@
     }
 
     if (mode == Mode.size) {
-      elemSizeModeButton.style.backgroundColor = colorSizeMode;
+      elemSizeModeButton.style.backgroundColor = color.sizeMode;
       elemSizeModeButton.innerText = 'サイズ変更モードを無効にする';
     } else {
-      elemSizeModeButton.style.backgroundColor = colorNormalMode;
+      elemSizeModeButton.style.backgroundColor = color.normalMode;
       elemSizeModeButton.innerText = 'サイズ変更モードを有効にする';
     }
 
@@ -227,14 +237,14 @@
   function debugDraw(states, ps) {
     const br = document.createElement('br');
     const svg = document.createElementNS(SVG_NS, 'svg');
-    svg.setAttribute('width', `${blockSize * width3}`);
-    svg.setAttribute('height', `${blockSize * height3}`);
+    svg.setAttribute('width', `${size.block * width3}`);
+    svg.setAttribute('height', `${size.block * height3}`);
     const g = document.createElementNS(SVG_NS, 'g');
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
         if (states[y][x] != stateNone) {
           const rect = createRect({x: x, y: y, width: 1, height: 1});
-          rect.setAttribute('fill', states[y][x] == stateA ? colorA : colorB);
+          rect.setAttribute('fill', states[y][x] == stateA ? color.stateA : color.stateB);
           rect.setAttribute('stroke', 'none');
           g.appendChild(rect);
         }
@@ -316,35 +326,35 @@
 
   function createLine(param) {
     const line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('x1', blockSize * param.x1);
-    line.setAttribute('y1', blockSize * param.y1);
-    line.setAttribute('x2', blockSize * param.x2);
-    line.setAttribute('y2', blockSize * param.y2);
+    line.setAttribute('x1', size.block * param.x1);
+    line.setAttribute('y1', size.block * param.y1);
+    line.setAttribute('x2', size.block * param.x2);
+    line.setAttribute('y2', size.block * param.y2);
     return line;
   }
 
   function createCircle(param) {
     const circle = document.createElementNS(SVG_NS, 'circle');
-    circle.setAttribute('cx', blockSize * param.cx);
-    circle.setAttribute('cy', blockSize * param.cy);
+    circle.setAttribute('cx', size.block * param.cx);
+    circle.setAttribute('cy', size.block * param.cy);
     circle.setAttribute('r', param.r);
     return circle;
   }
 
   function createRect(param) {
     const rect = document.createElementNS(SVG_NS, 'rect');
-    rect.setAttribute('x', blockSize * param.x);
-    rect.setAttribute('y', blockSize * param.y);
-    rect.setAttribute('width', blockSize * param.width);
-    rect.setAttribute('height', blockSize * param.height);
+    rect.setAttribute('x', size.block * param.x);
+    rect.setAttribute('y', size.block * param.y);
+    rect.setAttribute('width', size.block * param.width);
+    rect.setAttribute('height', size.block * param.height);
     return rect;
   }
 
   function createText(param) {
     const text = document.createElementNS(SVG_NS, 'text');
-    text.setAttribute('x', blockSize * param.x);
-    text.setAttribute('y', blockSize * param.y);
-    text.setAttribute('font-size', `${Math.floor(blockSize * 0.4)}px`);
+    text.setAttribute('x', size.block * param.x);
+    text.setAttribute('y', size.block * param.y);
+    text.setAttribute('font-size', `${Math.floor(size.block * 0.4)}px`);
     text.textContent = param.text;
     return text;
   }
@@ -353,14 +363,14 @@
     // 横線
     for (let y = 0; y <= height3; ++y) {
       const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
-      line.setAttribute('stroke', colorLine);
+      line.setAttribute('stroke', color.line);
       line.setAttribute('stroke-dasharray', '1, 3');
       g.appendChild(line);
     }
     // 縦線
     for (let x = 0; x <= width3; ++x) {
       const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
-      line.setAttribute('stroke', colorLine);
+      line.setAttribute('stroke', color.line);
       line.setAttribute('stroke-dasharray', '1, 3');
       g.appendChild(line);
     }
@@ -368,7 +378,7 @@
     if (mode != Mode.manual) {
       const rect = createRect({x: width, y: height, width: width, height: height});
       rect.setAttribute('fill', 'none');
-      rect.setAttribute('stroke', colorLine);
+      rect.setAttribute('stroke', color.line);
       rect.setAttribute('stroke-dasharray', '2, 2');
       g.appendChild(rect);
     }
@@ -392,7 +402,7 @@
         const cursorPos = getCursorPos(elemSvg, e);
         let minDist = -1;
         for (const point of points) {
-          let dist = (cursorPos.x - blockSize * point[0].cx / 2) ** 2 + (cursorPos.y - blockSize * point[0].cy / 2) ** 2;
+          let dist = (cursorPos.x - size.block * point[0].cx / 2) ** 2 + (cursorPos.y - size.block * point[0].cy / 2) ** 2;
           if (minDist == -1 || dist < minDist) {
             minDist = dist;
             selectedPoint = point[counterId % point.length];
@@ -414,7 +424,7 @@
       // 背景
       {
         const rect = createRect({x: 0, y: 0, width: width3, height: height3});
-        rect.setAttribute('fill', colorNone);
+        rect.setAttribute('fill', color.none);
         rect.setAttribute('stroke', 'none');
         g.appendChild(rect);
       }
@@ -422,13 +432,13 @@
       // サイズ変更モード
       if (mode == Mode.size) {
         const polygon = document.createElementNS(SVG_NS, 'polygon');
-        const cx = blockSize * width3 / 2;
-        const cy = blockSize * height3 / 2;
-        const w = blockSize * width;
-        const h = blockSize * height;
+        const cx = size.block * width3 / 2;
+        const cy = size.block * height3 / 2;
+        const w = size.block * width;
+        const h = size.block * height;
         polygon.setAttribute('points', `${cx},${cy + h} ${cx + w},${cy} ${cx},${cy - h} ${cx - w},${cy}`);
-        polygon.setAttribute('fill', colorSizeMode);
-        polygon.setAttribute('stroke', colorLine);
+        polygon.setAttribute('fill', color.sizeMode);
+        polygon.setAttribute('stroke', color.line);
         polygon.setAttribute('stroke-dasharray', '2, 2');
         g.appendChild(polygon);
       }
@@ -439,7 +449,7 @@
         for (let x = 0; x < width3; ++x) {
           if (isX(states[y][x])) {
             const rect = createRect({x: x, y: y, width: 1, height: 1});
-            rect.setAttribute('fill', states[y][x] == stateA ? colorA : colorB);
+            rect.setAttribute('fill', states[y][x] == stateA ? color.stateA : color.stateB);
             rect.setAttribute('stroke', 'none');
             g.appendChild(rect);
           }
@@ -452,30 +462,30 @@
     // 点
     for (const point of points) {
       const isSelected = point[counterId % point.length] === selectedPoint;
-      const color = isSelected ? colorSelected : colorNormal;
+      const pointColor = isSelected ? color.selected : color.normal;
       if (point[0].cx == point[0].cbx && point[0].cy == point[0].cby) {
         const len = 0.35;
         {
           const line = createLine({x1: point[0].cx / 2.0 - len, y1: point[0].cy / 2.0, x2: point[0].cx / 2.0 + len, y2: point[0].cy / 2.0});
-          line.setAttribute('stroke', color);
+          line.setAttribute('stroke', pointColor);
           line.setAttribute('stroke-width', 2.0);
           g.appendChild(line);
         }
         {
           const line = createLine({x1: point[0].cx / 2.0, y1: point[0].cy / 2.0 - len, x2: point[0].cx / 2.0, y2: point[0].cy / 2.0 + len});
-          line.setAttribute('stroke', color);
+          line.setAttribute('stroke', pointColor);
           line.setAttribute('stroke-width', 2.0);
           g.appendChild(line);
         }
       }
       {
-        const r = isSelected ? sizeSelected : sizeNormal;
+        const r = isSelected ? size.selected : size.normal;
         const circle = createCircle({cx: point[0].cx / 2, cy: point[0].cy / 2, r: r});
-        circle.setAttribute('fill', color);
+        circle.setAttribute('fill', pointColor);
         if (point.length != 1) {
           circle.setAttribute('stroke-width', isSelected ? '6' : '5');
           circle.setAttribute('stroke-dasharray', '1, 1');
-          circle.setAttribute('stroke', color);
+          circle.setAttribute('stroke', pointColor);
         }
         g.appendChild(circle);
         if (point.length != 1) {
@@ -486,9 +496,9 @@
     }
 
     if (centerB !== undefined) {
-      const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: sizeCenterB});
+      const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: size.centerB});
       circle.setAttribute('fill', 'none');
-      circle.setAttribute('stroke', colorCenterB);
+      circle.setAttribute('stroke', color.centerB);
       g.appendChild(circle);
     }
 
@@ -498,8 +508,8 @@
       // 図形(AUB)が連結点対称
       if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
         const centerAorB = getCenter(isAorB);
-        const circle = createCircle({cx: centerAorB.x / 2, cy: centerAorB.y / 2, r: sizeSelected});
-        circle.setAttribute('fill', colorSelected);
+        const circle = createCircle({cx: centerAorB.x / 2, cy: centerAorB.y / 2, r: size.selected});
+        circle.setAttribute('fill', color.selected);
         g.appendChild(circle);
         flag = true;
       }
@@ -508,13 +518,13 @@
       if (count(isB) != 0 && isPointSymmetry(isB) && isConnected(isB)) {
         centerB = getCenter(isB);
         const centerAorB = getCenter(isAorB);
-        let r = sizeSelected;
+        let r = size.selected;
         if (flag && centerB.x == centerAorB.x && centerB.y == centerAorB.y) {
           r += 5;
         }
         const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: r});
         circle.setAttribute('fill', 'none');
-        circle.setAttribute('stroke', colorCenterB);
+        circle.setAttribute('stroke', color.centerB);
         g.appendChild(circle);
       }
     }
@@ -523,14 +533,14 @@
       // ＼
       {
         const line = createLine({x1: width, y1: height, x2: width2, y2: height2});
-        line.setAttribute('stroke', colorLine);
+        line.setAttribute('stroke', color.line);
         line.setAttribute('stroke-dasharray', '2, 2');
         g.appendChild(line);
       }
       // ／
       {
         const line = createLine({x1: width2, y1: height, x2: width, y2: height2});
-        line.setAttribute('stroke', colorLine);
+        line.setAttribute('stroke', color.line);
         line.setAttribute('stroke-dasharray', '2, 2');
         g.appendChild(line);
       }
@@ -548,8 +558,8 @@
   // カーソル位置の座標を得る
   function getCurXY(e) {
     const cursorPos = getCursorPos(elemSvg, e);
-    const x = clamp(Math.floor(cursorPos.x / blockSize), 0, width3 - 1);
-    const y = clamp(Math.floor(cursorPos.y / blockSize), 0, height3 - 1);
+    const x = clamp(Math.floor(cursorPos.x / size.block), 0, width3 - 1);
+    const y = clamp(Math.floor(cursorPos.y / size.block), 0, height3 - 1);
     return {x: x, y: y};
   }
 
@@ -587,9 +597,9 @@
 
     if (mode == Mode.size) {
       const cursorPos = getCursorPos(elemSvg, e);
-      const x = cursorPos.x - blockSize * width3 / 2;
-      const y = cursorPos.y - blockSize * height3 / 2;
-      if (Math.abs(x) / width + Math.abs(y) / height > blockSize) {
+      const x = cursorPos.x - size.block * width3 / 2;
+      const y = cursorPos.y - size.block * height3 / 2;
+      if (Math.abs(x) / width + Math.abs(y) / height > size.block) {
         return;
       }
       e.preventDefault();
@@ -599,13 +609,13 @@
       let newWidth = width;
       let newHeight = height;
       if (Math.abs(x) / width > Math.abs(y) / height) {
-        const dd = Math.abs(x) > blockSize * width / 2 ? 1 : -1;
+        const dd = Math.abs(x) > size.block * width / 2 ? 1 : -1;
         if (width != 1 || dd != -1) {
           newWidth += dd;
           if (x < 0) dx += dd;
         }
       } else {
-        const dd = Math.abs(y) > blockSize * height / 2 ? 1 : -1;
+        const dd = Math.abs(y) > size.block * height / 2 ? 1 : -1;
         if (height != 1 || dd != -1) {
           newHeight += dd;
           if (y < 0) dy += dd;
@@ -865,8 +875,8 @@
         }
         /*
         debugDraw(states,
-          [{x: cx, y: cy, r: sizeSelected, fill: colorSelected, stroke: 'none'},
-           {x: cbx, y: cby, r: sizeCenterB, fill: 'none', stroke: colorCenterB}]);
+          [{x: cx, y: cy, r: size.selected, fill: color.selected, stroke: 'none'},
+           {x: cbx, y: cby, r: size.centerB, fill: 'none', stroke: color.centerB}]);
         */
       }
     }
