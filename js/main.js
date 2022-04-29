@@ -40,7 +40,7 @@
     normal: 'red',
     selected: 'darkviolet',
     centerB: 'blue',
-  }
+  };
 
   const size = {
     // マス
@@ -50,7 +50,7 @@
     normal: 3,
     selected: 6,
     centerB: 6,
-  }
+  };
 
   const dys = [1, 0, -1, 0];
   const dxs = [0, 1, 0, -1];
