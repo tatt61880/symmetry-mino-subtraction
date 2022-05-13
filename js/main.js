@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  const version = 'Version: 2022.04.29';
+  const version = 'Version: 2022.05.13';
 
   const debug = false;
   window.addEventListener('load', init, false);
@@ -116,7 +116,7 @@
       elemUrlInfo.innerHTML = '';
     } else {
       const url = getUrlInfo();
-      elemUrlInfo.innerHTML = `↓現在の盤面のURL↓<br><a href="${url}">${url}</a>`;
+      elemUrlInfo.innerHTML = `<a href="${url}">現在の盤面のURL</a>`;
     }
   }
 
@@ -956,25 +956,25 @@
     draw(e);
   }
 
-  // {{{ Stack
-  function Stack() {
-    this.data = [];
+  class Stack {
+    constructor() {
+      this.data = [];
+    }
+    push(val) {
+      this.data.push(val);
+      return val;
+    }
+    pop() {
+      return this.data.pop();
+    }
+    top() {
+      return this.data[this.data.length - 1];
+    }
+    size() {
+      return this.data.length;
+    }
+    empty() {
+      return this.data.length == 0;
+    }
   }
-  Stack.prototype.push = function(val) {
-    this.data.push(val);
-    return val;
-  };
-  Stack.prototype.pop = function() {
-    return this.data.pop();
-  };
-  Stack.prototype.top = function() {
-    return this.data[this.data.length - 1];
-  };
-  Stack.prototype.size = function() {
-    return this.data.length;
-  };
-  Stack.prototype.empty = function() {
-    return this.data.length == 0;
-  };
-  // }}}
 })();
