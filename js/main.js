@@ -77,10 +77,10 @@
 
   function analyzeUrl() {
     const res = {
-      width: width, 
+      width: width,
       height: height,
       blockStr: '',
-      mode: mode
+      mode: mode,
     };
     const queryStrs = location.href.split('?')[1];
     if (queryStrs == null) return res;
@@ -711,8 +711,7 @@
     }
     let x0;
     let y0;
-    loop:
-    for (let y = 0; y < height3; ++y) {
+    loop: for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
         if (isX(statesTemp[y][x])) {
           x0 = x;
