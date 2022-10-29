@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  const version = 'Version: 2022.05.13';
+  const version = 'Version: 2022.10.30';
 
   const debug = false;
   window.addEventListener('load', init, false);
@@ -265,7 +265,7 @@
   }
 
   function init(e) {
-    document.getElementById('versionInfo').innerText = version;
+    document.getElementById('version-info').innerText = version;
 
     elemSizeInfo = document.getElementById('sizeInfo');
     elemWidth = document.getElementById('widthVal');
