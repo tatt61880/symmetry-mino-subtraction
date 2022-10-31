@@ -55,7 +55,7 @@
   const dys = [1, 0, -1, 0];
   const dxs = [0, 1, 0, -1];
 
-  let states = [];
+  const states = [];
   let points = [];
 
   const Mode = {
@@ -402,7 +402,7 @@
         const cursorPos = getCursorPos(elemSvg, e);
         let minDist = -1;
         for (const point of points) {
-          let dist = (cursorPos.x - size.block * point[0].cx / 2) ** 2 + (cursorPos.y - size.block * point[0].cy / 2) ** 2;
+          const dist = (cursorPos.x - size.block * point[0].cx / 2) ** 2 + (cursorPos.y - size.block * point[0].cy / 2) ** 2;
           if (minDist == -1 || dist < minDist) {
             minDist = dist;
             selectedPoint = point[counterId % point.length];

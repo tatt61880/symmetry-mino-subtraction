@@ -14,9 +14,9 @@ body {
 }
 
 #version-info {
-  color: gray;
-  font-weight: bold;
   font-size: 0.9rem;
+  font-weight: bold;
+  color: gray;
 }
 
 div {
@@ -24,9 +24,9 @@ div {
 }
 
 h3 {
-  margin: 0px;
-  background-color: pink;
+  margin: 0;
   font-weight: bold;
+  background-color: pink;
 }
 
 input {
@@ -43,23 +43,23 @@ span.pink {
 }
 
 a.button {
-  margin: 5px 10px;
-  padding: 10px 10px;
   display: inline-block;
-  text-align: center;
-  vertical-align: middle;
+  padding: 10px;
+  margin: 5px 10px;
   font-size: 14px;
   font-weight: bold;
-  cursor: pointer;
-  text-decoration: none;
   color: black;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
   border: 2px solid;
   border-radius: 25px;
 }
 
 svg {
+  padding: 0;
   margin: 5px 15px 2px;
-  padding: 0px;
 }
 
 g {
