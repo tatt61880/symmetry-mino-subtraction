@@ -19,6 +19,14 @@ body {
   color: gray;
 }
 
+footer {
+  position: relative;
+  font-size: 1rem;
+  color: #aa8888;
+  text-align: center;
+  background-color: pink;
+}
+
 div {
   margin: auto;
 }
