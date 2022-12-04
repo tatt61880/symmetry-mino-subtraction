@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  const version = 'Version: 2022.10.30';
+  const version = 'Version: 2022.12.04';
 
   const debug = false;
   window.addEventListener('load', init, false);
@@ -83,10 +83,10 @@
       mode: mode,
     };
     const queryStrs = location.href.split('?')[1];
-    if (queryStrs == null) return res;
+    if (queryStrs === undefined) return res;
     for (const queryStr of queryStrs.split('&')) {
       const paramArray = queryStr.split('=');
-      if (paramArray.length != 2) continue;
+      if (paramArray.length !== 2) continue;
       const paramName = paramArray[0];
       const paramVal = paramArray[1];
       switch (paramName) {
@@ -112,7 +112,7 @@
   }
 
   function updateUrlInfo() {
-    if (mode == Mode.manual) {
+    if (mode === Mode.manual) {
       elemUrlInfo.innerHTML = '';
     } else {
       const url = getUrlInfo();
@@ -143,13 +143,13 @@
     let y = height + dy;
     let x = width + dx;
     for (const c of str) {
-      if (c == '-') {
+      if (c === '-') {
         y++;
-        if (y == height2) break;
+        if (y === height2) break;
         x = width + dx;
       } else {
         if (isInsideCenterArea(x, y)) {
-          states[y][x] = c == '1' ? stateA : stateNone;
+          states[y][x] = c === '1' ? stateA : stateNone;
         }
         x++;
       }
@@ -205,7 +205,7 @@
       break;
     }
 
-    if (mode == Mode.size) {
+    if (mode === Mode.size) {
       elemSizeModeButton.style.backgroundColor = color.sizeMode;
       elemSizeModeButton.innerText = 'サイズ変更モードを無効にする';
     } else {
@@ -213,7 +213,7 @@
       elemSizeModeButton.innerText = 'サイズ変更モードを有効にする';
     }
 
-    elemSizeInfo.style.display = mode == Mode.manual ? 'none' : 'block';
+    elemSizeInfo.style.display = mode === Mode.manual ? 'none' : 'block';
   }
 
   function toggleSizeMode(e) {
@@ -242,9 +242,9 @@
     const g = document.createElementNS(SVG_NS, 'g');
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
-        if (states[y][x] != stateNone) {
+        if (states[y][x] !== stateNone) {
           const rect = createRect({x: x, y: y, width: 1, height: 1});
-          rect.setAttribute('fill', states[y][x] == stateA ? color.stateA : color.stateB);
+          rect.setAttribute('fill', states[y][x] === stateA ? color.stateA : color.stateB);
           rect.setAttribute('stroke', 'none');
           g.appendChild(rect);
         }
@@ -375,7 +375,7 @@
       g.appendChild(line);
     }
     // 中央部
-    if (mode != Mode.manual) {
+    if (mode !== Mode.manual) {
       const rect = createRect({x: width, y: height, width: width, height: height});
       rect.setAttribute('fill', 'none');
       rect.setAttribute('stroke', color.line);
@@ -396,19 +396,19 @@
     let centerB = undefined;
     const counterId = Math.floor(step / 10); // 適当に決めた値。
     step = (step + 1) % Number.MAX_SAFE_INTEGER;
-    if (mode != Mode.manual) {
+    if (mode !== Mode.manual) {
       removeB();
-      if (mode != Mode.size && points.length != 0) {
+      if (mode !== Mode.size && points.length !== 0) {
         const cursorPos = getCursorPos(elemSvg, e);
         let minDist = -1;
         for (const point of points) {
           const dist = (cursorPos.x - size.block * point[0].cx / 2) ** 2 + (cursorPos.y - size.block * point[0].cy / 2) ** 2;
-          if (minDist == -1 || dist < minDist) {
+          if (minDist === -1 || dist < minDist) {
             minDist = dist;
             selectedPoint = point[counterId % point.length];
           }
         }
-        if (!(selectedPoint.cx == selectedPoint.cbx && selectedPoint.cy == selectedPoint.cby)) {
+        if (!(selectedPoint.cx === selectedPoint.cbx && selectedPoint.cy === selectedPoint.cby)) {
           const firstB = [];
           pointSymmetryA(firstB, selectedPoint.cx, selectedPoint.cy);
           searchSolutionSub(selectedPoint.cx, selectedPoint.cy, selectedPoint.cbx, selectedPoint.cby, firstB);
@@ -430,7 +430,7 @@
       }
 
       // サイズ変更モード
-      if (mode == Mode.size) {
+      if (mode === Mode.size) {
         const polygon = document.createElementNS(SVG_NS, 'polygon');
         const cx = size.block * width3 / 2;
         const cy = size.block * height3 / 2;
@@ -444,12 +444,12 @@
       }
 
       // 図形
-      const isX = mode == Mode.size ? isA : isAorB;
+      const isX = mode === Mode.size ? isA : isAorB;
       for (let y = 0; y < height3; ++y) {
         for (let x = 0; x < width3; ++x) {
           if (isX(states[y][x])) {
             const rect = createRect({x: x, y: y, width: 1, height: 1});
-            rect.setAttribute('fill', states[y][x] == stateA ? color.stateA : color.stateB);
+            rect.setAttribute('fill', states[y][x] === stateA ? color.stateA : color.stateB);
             rect.setAttribute('stroke', 'none');
             g.appendChild(rect);
           }
@@ -463,7 +463,7 @@
     for (const point of points) {
       const isSelected = point[counterId % point.length] === selectedPoint;
       const pointColor = isSelected ? color.selected : color.normal;
-      if (point[0].cx == point[0].cbx && point[0].cy == point[0].cby) {
+      if (point[0].cx === point[0].cbx && point[0].cy === point[0].cby) {
         const len = 0.35;
         {
           const line = createLine({x1: point[0].cx / 2.0 - len, y1: point[0].cy / 2.0, x2: point[0].cx / 2.0 + len, y2: point[0].cy / 2.0});
@@ -482,13 +482,13 @@
         const r = isSelected ? size.selected : size.normal;
         const circle = createCircle({cx: point[0].cx / 2, cy: point[0].cy / 2, r: r});
         circle.setAttribute('fill', pointColor);
-        if (point.length != 1) {
+        if (point.length !== 1) {
           circle.setAttribute('stroke-width', isSelected ? '6' : '5');
           circle.setAttribute('stroke-dasharray', '1, 1');
           circle.setAttribute('stroke', pointColor);
         }
         g.appendChild(circle);
-        if (point.length != 1) {
+        if (point.length !== 1) {
           const text = createText({x: point[0].cx / 2 + 0.1, y: point[0].cy / 2 - 0.1, text: point.length});
           g.appendChild(text);
         }
@@ -502,11 +502,11 @@
       g.appendChild(circle);
     }
 
-    if (mode == Mode.manual) {
+    if (mode === Mode.manual) {
       let flag = false;
 
       // 図形(AUB)が連結点対称
-      if (count(isAorB) != 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
+      if (count(isAorB) !== 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
         const centerAorB = getCenter(isAorB);
         const circle = createCircle({cx: centerAorB.x / 2, cy: centerAorB.y / 2, r: size.selected});
         circle.setAttribute('fill', color.selected);
@@ -515,11 +515,11 @@
       }
 
       // 図形Bが連結点対称
-      if (count(isB) != 0 && isPointSymmetry(isB) && isConnected(isB)) {
+      if (count(isB) !== 0 && isPointSymmetry(isB) && isConnected(isB)) {
         centerB = getCenter(isB);
         const centerAorB = getCenter(isAorB);
         let r = size.selected;
-        if (flag && centerB.x == centerAorB.x && centerB.y == centerAorB.y) {
+        if (flag && centerB.x === centerAorB.x && centerB.y === centerAorB.y) {
           r += 5;
         }
         const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: r});
@@ -529,7 +529,7 @@
       }
     }
 
-    if (mode == Mode.size) {
+    if (mode === Mode.size) {
       // ＼
       {
         const line = createLine({x1: width, y1: height, x2: width2, y2: height2});
@@ -595,7 +595,7 @@
       return;
     }
 
-    if (mode == Mode.size) {
+    if (mode === Mode.size) {
       const cursorPos = getCursorPos(elemSvg, e);
       const x = cursorPos.x - size.block * width3 / 2;
       const y = cursorPos.y - size.block * height3 / 2;
@@ -610,13 +610,13 @@
       let newHeight = height;
       if (Math.abs(x) / width > Math.abs(y) / height) {
         const dd = Math.abs(x) > size.block * width / 2 ? 1 : -1;
-        if (width != 1 || dd != -1) {
+        if (width !== 1 || dd !== -1) {
           newWidth += dd;
           if (x < 0) dx += dd;
         }
       } else {
         const dd = Math.abs(y) > size.block * height / 2 ? 1 : -1;
-        if (height != 1 || dd != -1) {
+        if (height !== 1 || dd !== -1) {
           newHeight += dd;
           if (y < 0) dy += dd;
         }
@@ -629,13 +629,13 @@
     e.preventDefault();
 
     const cur = getCurXY(e);
-    if (mode != Mode.manual && !isInsideCenterArea(cur.x, cur.y)) {
+    if (mode !== Mode.manual && !isInsideCenterArea(cur.x, cur.y)) {
       draw(e);
       return;
     }
 
-    const targetState = mode == Mode.normal ? stateA : stateB;
-    drawingState = states[cur.y][cur.x] == targetState ? stateNone : targetState;
+    const targetState = mode === Mode.normal ? stateA : stateB;
+    drawingState = states[cur.y][cur.x] === targetState ? stateNone : targetState;
     drawingFlag = true;
 
     prev = {x: -1, y: -1};
@@ -645,20 +645,20 @@
   function pointermove(e) {
     if (debug) window.console.log('pointermove');
 
-    if (mode == Mode.size) return;
+    if (mode === Mode.size) return;
     if (!drawingFlag) {
       draw(e);
       return;
     }
 
     const cur = getCurXY(e);
-    if (mode != Mode.manual && !isInsideCenterArea(cur.x, cur.y)) return;
+    if (mode !== Mode.manual && !isInsideCenterArea(cur.x, cur.y)) return;
     e.preventDefault();
 
-    if (cur.x == prev.x && cur.y == prev.y) return;
+    if (cur.x === prev.x && cur.y === prev.y) return;
     prev.x = cur.x;
     prev.y = cur.y;
-    if (mode == Mode.normal || states[cur.y][cur.x] != stateA) {
+    if (mode === Mode.normal || states[cur.y][cur.x] !== stateA) {
       states[cur.y][cur.x] = drawingState;
     }
 
@@ -666,15 +666,15 @@
   }
 
   function isAorB(x) {
-    return x != stateNone;
+    return x !== stateNone;
   }
 
   function isA(x) {
-    return x == stateA;
+    return x === stateA;
   }
 
   function isB(x) {
-    return x == stateB;
+    return x === stateB;
   }
 
   // 図形が点対称か否か。
@@ -729,10 +729,10 @@
       for (let i = 0; i < 4; i++) {
         const xx = xy[0] + dxs[i];
         const yy = xy[1] + dys[i];
-        if (xx == -1) continue;
-        if (yy == -1) continue;
-        if (xx == width3) continue;
-        if (yy == height3) continue;
+        if (xx === -1) continue;
+        if (yy === -1) continue;
+        if (xx === width3) continue;
+        if (yy === height3) continue;
         if (isX(statesTemp[yy][xx])) {
           statesTemp[yy][xx] = stateNone;
           st.push([xx, yy]);
@@ -752,12 +752,12 @@
   function pointSymmetryA(firstB, cx, cy) {
     for (let y = height; y < height2; ++y) {
       for (let x = width; x < width2; ++x) {
-        if (states[y][x] == stateA) {
+        if (states[y][x] === stateA) {
           // 点(x, y)を点(cx, cy)に対して点対称操作した位置にある点(bx, by)
           const bx = cx - x - 1;
           const by = cy - y - 1;
           // 点(x, y)と点(cx, cy)は中央付近の枠内にある前提。⇒点(bx, by)はあらかじめ用意したエリア外にはみ出ない。
-          if (states[by][bx] == stateNone) {
+          if (states[by][bx] === stateNone) {
             states[by][bx] = stateB;
             firstB.push({x: bx, y: by});
           }
@@ -796,7 +796,7 @@
   function removeB() {
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
-        if (states[y][x] == stateB) {
+        if (states[y][x] === stateB) {
           states[y][x] = stateNone;
         }
       }
@@ -825,17 +825,17 @@
     for (;;) {
       newB = pointSymmetry(newB, cbx, cby, true);
       if (newB === undefined) return false;
-      if (newB.length == 0) break;
+      if (newB.length === 0) break;
 
       newB = pointSymmetry(newB, cx, cy, false);
       if (newB === undefined) return false;
-      if (newB.length == 0) break;
+      if (newB.length === 0) break;
     }
     return isOk();
   }
 
   function addPoint(cx, cy, cbx, cby) {
-    if (points.length != 0 && cx == points[points.length - 1][0].cx && cy == points[points.length - 1][0].cy) {
+    if (points.length !== 0 && cx === points[points.length - 1][0].cx && cy === points[points.length - 1][0].cy) {
       points[points.length - 1].push({cx: cx, cy: cy, cbx: cbx, cby: cby});
       return;
     }
@@ -848,7 +848,7 @@
     const firstB = [];
     pointSymmetryA(firstB, cx, cy);
     if (isCenterA) {
-      if (firstB.length == 0) {
+      if (firstB.length === 0) {
         if (isPointSymmetry(isA)) {
           addPoint(cx, cy, cx, cy);
           return true;
@@ -912,7 +912,7 @@
   function update(e) {
     if (debug) window.console.log('update');
 
-    if (mode == Mode.manual) {
+    if (mode === Mode.manual) {
       updateUrlInfo();
       draw(e);
       return;
@@ -927,12 +927,12 @@
     case 1:
       addPoint(centerA.x, centerA.y, centerA.x, centerA.y);
       for (let cx = width2; cx <= width4; ++cx) {
-        if (cx == centerA.x) continue;
+        if (cx === centerA.x) continue;
         const dx = cx < centerA.x ? -1 : 1;
         addPoint(cx, centerA.y, cx + dx, centerA.y);
       }
       for (let cy = height2; cy <= height4; ++cy) {
-        if (cy == centerA.y) continue;
+        if (cy === centerA.y) continue;
         const dy = cy < centerA.y ? -1 : 1;
         addPoint(centerA.x, cy, centerA.x, cy + dy);
       }
@@ -940,7 +940,7 @@
     default:
       for (let cy = height2; cy <= height4; ++cy) {
         for (let cx = width2; cx <= width4; ++cx) {
-          const isCenterA = cx == centerA.x && cy == centerA.y;
+          const isCenterA = cx === centerA.x && cy === centerA.y;
           searchSolution(cx, cy, isCenterA);
         }
       }
@@ -973,7 +973,7 @@
       return this.data.length;
     }
     empty() {
-      return this.data.length == 0;
+      return this.data.length === 0;
     }
   }
 })();
