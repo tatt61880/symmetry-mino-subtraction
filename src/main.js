@@ -2,7 +2,6 @@
   'use strict';
   const version = 'Version: 2022.12.25';
 
-  const debug = false;
   window.addEventListener('load', init, false);
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -571,8 +570,6 @@
   }
 
   function pointerup() {
-    if (debug) console.log('pointerup');
-
     drawingFlag = false;
   }
 
@@ -584,8 +581,6 @@
   }
 
   function pointerdown(e) {
-    if (debug) console.log('pointerdown');
-
     const touches = e.changedTouches;
     if (touches !== undefined && touches.length > 1) {
       return;
@@ -643,8 +638,6 @@
   }
 
   function pointermove(e) {
-    if (debug) console.log('pointermove');
-
     if (mode === Mode.size) return;
     if (!drawingFlag) {
       draw(e);
@@ -910,8 +903,6 @@
   }
 
   function update(e) {
-    if (debug) console.log('update');
-
     if (mode === Mode.manual) {
       updateUrlInfo();
       draw(e);
