@@ -571,7 +571,7 @@
   }
 
   function pointerup() {
-    if (debug) window.console.log('pointerup');
+    if (debug) console.log('pointerup');
 
     drawingFlag = false;
   }
@@ -584,7 +584,7 @@
   }
 
   function pointerdown(e) {
-    if (debug) window.console.log('pointerdown');
+    if (debug) console.log('pointerdown');
 
     const touches = e.changedTouches;
     if (touches !== undefined && touches.length > 1) {
@@ -643,7 +643,7 @@
   }
 
   function pointermove(e) {
-    if (debug) window.console.log('pointermove');
+    if (debug) console.log('pointermove');
 
     if (mode === Mode.size) return;
     if (!drawingFlag) {
@@ -910,7 +910,7 @@
   }
 
   function update(e) {
-    if (debug) window.console.log('update');
+    if (debug) console.log('update');
 
     if (mode === Mode.manual) {
       updateUrlInfo();
