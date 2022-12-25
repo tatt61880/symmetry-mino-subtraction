@@ -6,7 +6,7 @@
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
 
-  let prev = {x: -1, y: -1};
+  let prev = { x: -1, y: -1 };
   let drawingState;
   let drawingFlag = false;
   let width = 6;
@@ -242,7 +242,7 @@
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
         if (states[y][x] !== stateNone) {
-          const rect = createRect({x, y, width: 1, height: 1});
+          const rect = createRect({ x, y, width: 1, height: 1 });
           rect.setAttribute('fill', states[y][x] === stateA ? color.stateA : color.stateB);
           rect.setAttribute('stroke', 'none');
           g.appendChild(rect);
@@ -251,7 +251,7 @@
     }
     drawFrame(g);
     for (const p of ps) {
-      const circle = createCircle({cx: p.x / 2, cy: p.y / 2, r: p.r});
+      const circle = createCircle({ cx: p.x / 2, cy: p.y / 2, r: p.r });
       circle.setAttribute('fill', p.fill);
       circle.setAttribute('stroke', p.stroke);
       g.appendChild(circle);
@@ -320,7 +320,7 @@
       cursorX = e.clientX - bcRect.left;
       cursorY = e.clientY - bcRect.top;
     }
-    return {x: cursorX, y: cursorY};
+    return { x: cursorX, y: cursorY };
   }
 
   function createLine(param) {
@@ -361,21 +361,21 @@
   function drawFrame(g) {
     // 横線
     for (let y = 0; y <= height3; ++y) {
-      const line = createLine({x1: 0, y1: y, x2: width3, y2: y});
+      const line = createLine({ x1: 0, y1: y, x2: width3, y2: y });
       line.setAttribute('stroke', color.line);
       line.setAttribute('stroke-dasharray', '1, 3');
       g.appendChild(line);
     }
     // 縦線
     for (let x = 0; x <= width3; ++x) {
-      const line = createLine({x1: x, y1: 0, x2: x, y2: height3});
+      const line = createLine({ x1: x, y1: 0, x2: x, y2: height3 });
       line.setAttribute('stroke', color.line);
       line.setAttribute('stroke-dasharray', '1, 3');
       g.appendChild(line);
     }
     // 中央部
     if (mode !== Mode.manual) {
-      const rect = createRect({x: width, y: height, width, height});
+      const rect = createRect({ x: width, y: height, width, height });
       rect.setAttribute('fill', 'none');
       rect.setAttribute('stroke', color.line);
       rect.setAttribute('stroke-dasharray', '2, 2');
@@ -422,7 +422,7 @@
     {
       // 背景
       {
-        const rect = createRect({x: 0, y: 0, width: width3, height: height3});
+        const rect = createRect({ x: 0, y: 0, width: width3, height: height3 });
         rect.setAttribute('fill', color.none);
         rect.setAttribute('stroke', 'none');
         g.appendChild(rect);
@@ -447,7 +447,7 @@
       for (let y = 0; y < height3; ++y) {
         for (let x = 0; x < width3; ++x) {
           if (isX(states[y][x])) {
-            const rect = createRect({x, y, width: 1, height: 1});
+            const rect = createRect({ x, y, width: 1, height: 1 });
             rect.setAttribute('fill', states[y][x] === stateA ? color.stateA : color.stateB);
             rect.setAttribute('stroke', 'none');
             g.appendChild(rect);
@@ -465,13 +465,13 @@
       if (point[0].cx === point[0].cbx && point[0].cy === point[0].cby) {
         const len = 0.35;
         {
-          const line = createLine({x1: point[0].cx / 2.0 - len, y1: point[0].cy / 2.0, x2: point[0].cx / 2.0 + len, y2: point[0].cy / 2.0});
+          const line = createLine({ x1: point[0].cx / 2.0 - len, y1: point[0].cy / 2.0, x2: point[0].cx / 2.0 + len, y2: point[0].cy / 2.0 });
           line.setAttribute('stroke', pointColor);
           line.setAttribute('stroke-width', 2.0);
           g.appendChild(line);
         }
         {
-          const line = createLine({x1: point[0].cx / 2.0, y1: point[0].cy / 2.0 - len, x2: point[0].cx / 2.0, y2: point[0].cy / 2.0 + len});
+          const line = createLine({ x1: point[0].cx / 2.0, y1: point[0].cy / 2.0 - len, x2: point[0].cx / 2.0, y2: point[0].cy / 2.0 + len });
           line.setAttribute('stroke', pointColor);
           line.setAttribute('stroke-width', 2.0);
           g.appendChild(line);
@@ -479,7 +479,7 @@
       }
       {
         const r = isSelected ? size.selected : size.normal;
-        const circle = createCircle({cx: point[0].cx / 2, cy: point[0].cy / 2, r});
+        const circle = createCircle({ cx: point[0].cx / 2, cy: point[0].cy / 2, r });
         circle.setAttribute('fill', pointColor);
         if (point.length !== 1) {
           circle.setAttribute('stroke-width', isSelected ? '6' : '5');
@@ -488,14 +488,14 @@
         }
         g.appendChild(circle);
         if (point.length !== 1) {
-          const text = createText({x: point[0].cx / 2 + 0.1, y: point[0].cy / 2 - 0.1, text: point.length});
+          const text = createText({ x: point[0].cx / 2 + 0.1, y: point[0].cy / 2 - 0.1, text: point.length });
           g.appendChild(text);
         }
       }
     }
 
     if (centerB !== undefined) {
-      const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: size.centerB});
+      const circle = createCircle({ cx: centerB.x / 2, cy: centerB.y / 2, r: size.centerB });
       circle.setAttribute('fill', 'none');
       circle.setAttribute('stroke', color.centerB);
       g.appendChild(circle);
@@ -507,7 +507,7 @@
       // 図形(AUB)が連結点対称
       if (count(isAorB) !== 0 && isPointSymmetry(isAorB) && isConnected(isAorB)) {
         const centerAorB = getCenter(isAorB);
-        const circle = createCircle({cx: centerAorB.x / 2, cy: centerAorB.y / 2, r: size.selected});
+        const circle = createCircle({ cx: centerAorB.x / 2, cy: centerAorB.y / 2, r: size.selected });
         circle.setAttribute('fill', color.selected);
         g.appendChild(circle);
         flag = true;
@@ -521,7 +521,7 @@
         if (flag && centerB.x === centerAorB.x && centerB.y === centerAorB.y) {
           r += 5;
         }
-        const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r});
+        const circle = createCircle({ cx: centerB.x / 2, cy: centerB.y / 2, r });
         circle.setAttribute('fill', 'none');
         circle.setAttribute('stroke', color.centerB);
         g.appendChild(circle);
@@ -531,14 +531,14 @@
     if (mode === Mode.size) {
       // ＼
       {
-        const line = createLine({x1: width, y1: height, x2: width2, y2: height2});
+        const line = createLine({ x1: width, y1: height, x2: width2, y2: height2 });
         line.setAttribute('stroke', color.line);
         line.setAttribute('stroke-dasharray', '2, 2');
         g.appendChild(line);
       }
       // ／
       {
-        const line = createLine({x1: width2, y1: height, x2: width, y2: height2});
+        const line = createLine({ x1: width2, y1: height, x2: width, y2: height2 });
         line.setAttribute('stroke', color.line);
         line.setAttribute('stroke-dasharray', '2, 2');
         g.appendChild(line);
@@ -559,7 +559,7 @@
     const cursorPos = getCursorPos(elemSvg, e);
     const x = clamp(Math.floor(cursorPos.x / size.block), 0, width3 - 1);
     const y = clamp(Math.floor(cursorPos.y / size.block), 0, height3 - 1);
-    return {x, y};
+    return { x, y };
   }
 
   // 中心付近の枠内およびその周上か否か。
@@ -633,7 +633,7 @@
     drawingState = states[cur.y][cur.x] === targetState ? stateNone : targetState;
     drawingFlag = true;
 
-    prev = {x: -1, y: -1};
+    prev = { x: -1, y: -1 };
     pointermove(e);
   }
 
@@ -752,7 +752,7 @@
           // 点(x, y)と点(cx, cy)は中央付近の枠内にある前提。⇒点(bx, by)はあらかじめ用意したエリア外にはみ出ない。
           if (states[by][bx] === stateNone) {
             states[by][bx] = stateB;
-            firstB.push({x: bx, y: by});
+            firstB.push({ x: bx, y: by });
           }
         }
       }
@@ -776,7 +776,7 @@
       switch (states[by][bx]) {
       case stateNone:
         states[by][bx] = stateB;
-        nextB.push({x: bx, y: by});
+        nextB.push({ x: bx, y: by });
         break;
       case stateA:
         if (checkFlag) return undefined;
@@ -829,10 +829,10 @@
 
   function addPoint(cx, cy, cbx, cby) {
     if (points.length !== 0 && cx === points[points.length - 1][0].cx && cy === points[points.length - 1][0].cy) {
-      points[points.length - 1].push({cx, cy, cbx, cby});
+      points[points.length - 1].push({ cx, cy, cbx, cby });
       return;
     }
-    points.push([{cx, cy, cbx, cby}]);
+    points.push([{ cx, cy, cbx, cby }]);
   }
 
   // 点(cx, cy)を図形(AUB)の点対称中心とする解が存在するか否か。
@@ -889,7 +889,7 @@
         }
       }
     }
-    return {x: minX + maxX + 1, y: minY + maxY + 1};
+    return { x: minX + maxX + 1, y: minY + maxY + 1 };
   }
 
   function count(isX) {
