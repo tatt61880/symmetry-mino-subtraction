@@ -1,6 +1,6 @@
-(function() {
+(function () {
   'use strict';
-  const version = 'Version: 2022.12.04';
+  const version = 'Version: 2022.12.25';
 
   const debug = false;
   window.addEventListener('load', init, false);
@@ -77,10 +77,10 @@
 
   function analyzeUrl() {
     const res = {
-      width: width,
-      height: height,
+      width,
+      height,
       blockStr: '',
-      mode: mode,
+      mode,
     };
     const queryStrs = location.href.split('?')[1];
     if (queryStrs === undefined) return res;
@@ -243,7 +243,7 @@
     for (let y = 0; y < height3; ++y) {
       for (let x = 0; x < width3; ++x) {
         if (states[y][x] !== stateNone) {
-          const rect = createRect({x: x, y: y, width: 1, height: 1});
+          const rect = createRect({x, y, width: 1, height: 1});
           rect.setAttribute('fill', states[y][x] === stateA ? color.stateA : color.stateB);
           rect.setAttribute('stroke', 'none');
           g.appendChild(rect);
@@ -376,7 +376,7 @@
     }
     // 中央部
     if (mode !== Mode.manual) {
-      const rect = createRect({x: width, y: height, width: width, height: height});
+      const rect = createRect({x: width, y: height, width, height});
       rect.setAttribute('fill', 'none');
       rect.setAttribute('stroke', color.line);
       rect.setAttribute('stroke-dasharray', '2, 2');
@@ -448,7 +448,7 @@
       for (let y = 0; y < height3; ++y) {
         for (let x = 0; x < width3; ++x) {
           if (isX(states[y][x])) {
-            const rect = createRect({x: x, y: y, width: 1, height: 1});
+            const rect = createRect({x, y, width: 1, height: 1});
             rect.setAttribute('fill', states[y][x] === stateA ? color.stateA : color.stateB);
             rect.setAttribute('stroke', 'none');
             g.appendChild(rect);
@@ -480,7 +480,7 @@
       }
       {
         const r = isSelected ? size.selected : size.normal;
-        const circle = createCircle({cx: point[0].cx / 2, cy: point[0].cy / 2, r: r});
+        const circle = createCircle({cx: point[0].cx / 2, cy: point[0].cy / 2, r});
         circle.setAttribute('fill', pointColor);
         if (point.length !== 1) {
           circle.setAttribute('stroke-width', isSelected ? '6' : '5');
@@ -522,7 +522,7 @@
         if (flag && centerB.x === centerAorB.x && centerB.y === centerAorB.y) {
           r += 5;
         }
-        const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r: r});
+        const circle = createCircle({cx: centerB.x / 2, cy: centerB.y / 2, r});
         circle.setAttribute('fill', 'none');
         circle.setAttribute('stroke', color.centerB);
         g.appendChild(circle);
@@ -560,7 +560,7 @@
     const cursorPos = getCursorPos(elemSvg, e);
     const x = clamp(Math.floor(cursorPos.x / size.block), 0, width3 - 1);
     const y = clamp(Math.floor(cursorPos.y / size.block), 0, height3 - 1);
-    return {x: x, y: y};
+    return {x, y};
   }
 
   // 中心付近の枠内およびその周上か否か。
@@ -836,10 +836,10 @@
 
   function addPoint(cx, cy, cbx, cby) {
     if (points.length !== 0 && cx === points[points.length - 1][0].cx && cy === points[points.length - 1][0].cy) {
-      points[points.length - 1].push({cx: cx, cy: cy, cbx: cbx, cby: cby});
+      points[points.length - 1].push({cx, cy, cbx, cby});
       return;
     }
-    points.push([{cx: cx, cy: cy, cbx: cbx, cby: cby}]);
+    points.push([{cx, cy, cbx, cby}]);
   }
 
   // 点(cx, cy)を図形(AUB)の点対称中心とする解が存在するか否か。
