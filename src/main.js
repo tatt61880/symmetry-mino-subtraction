@@ -89,18 +89,18 @@
       const paramName = paramArray[0];
       const paramVal = paramArray[1];
       switch (paramName) {
-      case 'w':
-        res.width = Number(paramVal);
-        break;
-      case 'h':
-        res.height = Number(paramVal);
-        break;
-      case 's':
-        res.blockStr = paramVal;
-        break;
-      case 'm':
-        res.mode = paramVal;
-        break;
+        case 'w':
+          res.width = Number(paramVal);
+          break;
+        case 'h':
+          res.height = Number(paramVal);
+          break;
+        case 's':
+          res.blockStr = paramVal;
+          break;
+        case 'm':
+          res.mode = paramVal;
+          break;
       }
     }
     return res;
@@ -181,9 +181,9 @@
 
   function updateModeInfo() {
     switch (mode) {
-    case Mode.normal:
-      elemModeNameInfo.innerHTML = '通常モード';
-      elemModeInfo.innerHTML = `
+      case Mode.normal:
+        elemModeNameInfo.innerHTML = '通常モード';
+        elemModeInfo.innerHTML = `
 濃い点線枠内にポリオミノを描画してください。<br>
 点対称連結ポリオミノ(<span class="aqua">水色</span>)を足すことで、<br>
 全体の図形(<span class="pink">ピンク</span>+<span class="aqua">水色</span>)を<br>
@@ -191,17 +191,17 @@
 その時の中心点を示します。<br>
 <br>
 探索手法の概要は<a href="https://github.com/tatt61880/symmetry-mino-subtraction#readme">GitHubのreadme</a>をご覧ください。`;
-      break;
-    case Mode.size:
-      elemModeNameInfo.innerHTML = 'サイズ変更モード';
-      elemModeInfo.innerHTML = 'クリック位置に応じて盤面を拡大縮小するモードです。';
-      break;
-    case Mode.manual:
-      elemModeNameInfo.innerHTML = '手動モード';
-      elemModeInfo.innerHTML = `
+        break;
+      case Mode.size:
+        elemModeNameInfo.innerHTML = 'サイズ変更モード';
+        elemModeInfo.innerHTML = 'クリック位置に応じて盤面を拡大縮小するモードです。';
+        break;
+      case Mode.manual:
+        elemModeNameInfo.innerHTML = '手動モード';
+        elemModeInfo.innerHTML = `
 <span class="pink">ピンク</span>を固定し、<span class="aqua">水色</span>を自ら描画するモードです。<br>
 <a href="${getUrlInfo()}">通常モードに戻す</a>`;
-      break;
+        break;
     }
 
     if (mode === Mode.size) {
@@ -218,12 +218,12 @@
   function toggleSizeMode(e) {
     e.preventDefault();
     switch (mode) {
-    case Mode.normal:
-      mode = Mode.size;
-      break;
-    case Mode.size:
-      mode = Mode.normal;
-      break;
+      case Mode.normal:
+        mode = Mode.size;
+        break;
+      case Mode.size:
+        mode = Mode.normal;
+        break;
     }
     updateModeInfo();
 
@@ -392,7 +392,7 @@
 
     // ポインタの位置に応じて図形Bをセットし直す。
     let selectedPoint;
-    let centerB = undefined;
+    let centerB;
     const counterId = Math.floor(step / 10); // 適当に決めた値。
     step = (step + 1) % Number.MAX_SAFE_INTEGER;
     if (mode !== Mode.manual) {
@@ -774,13 +774,13 @@
       if (by >= height3) return undefined;
 
       switch (states[by][bx]) {
-      case stateNone:
-        states[by][bx] = stateB;
-        nextB.push({ x: bx, y: by });
-        break;
-      case stateA:
-        if (checkFlag) return undefined;
-        break;
+        case stateNone:
+          states[by][bx] = stateB;
+          nextB.push({ x: bx, y: by });
+          break;
+        case stateA:
+          if (checkFlag) return undefined;
+          break;
       }
     }
     return nextB;
@@ -913,29 +913,29 @@
     const centerA = getCenter(isA);
     const countA = count(isA);
     switch (countA) {
-    case 0:
-      break;
-    case 1:
-      addPoint(centerA.x, centerA.y, centerA.x, centerA.y);
-      for (let cx = width2; cx <= width4; ++cx) {
-        if (cx === centerA.x) continue;
-        const dx = cx < centerA.x ? -1 : 1;
-        addPoint(cx, centerA.y, cx + dx, centerA.y);
-      }
-      for (let cy = height2; cy <= height4; ++cy) {
-        if (cy === centerA.y) continue;
-        const dy = cy < centerA.y ? -1 : 1;
-        addPoint(centerA.x, cy, centerA.x, cy + dy);
-      }
-      break;
-    default:
-      for (let cy = height2; cy <= height4; ++cy) {
+      case 0:
+        break;
+      case 1:
+        addPoint(centerA.x, centerA.y, centerA.x, centerA.y);
         for (let cx = width2; cx <= width4; ++cx) {
-          const isCenterA = cx === centerA.x && cy === centerA.y;
-          searchSolution(cx, cy, isCenterA);
+          if (cx === centerA.x) continue;
+          const dx = cx < centerA.x ? -1 : 1;
+          addPoint(cx, centerA.y, cx + dx, centerA.y);
         }
-      }
-      break;
+        for (let cy = height2; cy <= height4; ++cy) {
+          if (cy === centerA.y) continue;
+          const dy = cy < centerA.y ? -1 : 1;
+          addPoint(centerA.x, cy, centerA.x, cy + dy);
+        }
+        break;
+      default:
+        for (let cy = height2; cy <= height4; ++cy) {
+          for (let cx = width2; cx <= width4; ++cx) {
+            const isCenterA = cx === centerA.x && cy === centerA.y;
+            searchSolution(cx, cy, isCenterA);
+          }
+        }
+        break;
     }
     const endTime = Date.now();
     elemProcessTimeInfo.innerHTML = `
