@@ -24,9 +24,10 @@ body {
 footer {
   position: relative;
   font-size: 1rem;
-  color: #aa8888;
+  font-weight: bold;
+  color: #000055;
   text-align: center;
-  background-color: pink;
+  background-color: #c0cbff;
 }
 
 div {
@@ -36,7 +37,8 @@ div {
 h3 {
   margin: 0;
   font-weight: bold;
-  background-color: pink;
+  color: #000055;
+  background-color: #c0cbff;
 }
 
 input {
