@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const version = 'Version: 2022.12.25';
+  const version = 'Version: 2026.04.25';
 
   window.addEventListener('load', init, false);
 
@@ -266,17 +266,17 @@
   function init(e) {
     document.getElementById('version-info').innerText = version;
 
-    elemSizeInfo = document.getElementById('sizeInfo');
-    elemWidth = document.getElementById('widthVal');
-    elemHeight = document.getElementById('heightVal');
-    elemSizeModeButton = document.getElementById('sizeModeButton');
+    elemSizeInfo = document.getElementById('size-info');
+    elemWidth = document.getElementById('width-val');
+    elemHeight = document.getElementById('height-val');
+    elemSizeModeButton = document.getElementById('size-mode-button');
 
-    elemProcessTimeInfo = document.getElementById('processTimeInfo');
-    elemSvg = document.getElementById('svgBoard');
-    elemUrlInfo = document.getElementById('urlInfo');
+    elemProcessTimeInfo = document.getElementById('process-time-info');
+    elemSvg = document.getElementById('svg-board');
+    elemUrlInfo = document.getElementById('url-info');
 
-    elemModeNameInfo = document.getElementById('modeNameInfo');
-    elemModeInfo = document.getElementById('modeInfo');
+    elemModeNameInfo = document.getElementById('mode-name-info');
+    elemModeInfo = document.getElementById('mode-info');
 
     const res = analyzeUrl();
     mode = res.mode;

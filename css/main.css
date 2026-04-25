@@ -58,7 +58,6 @@ a.button {
   display: inline-block;
   padding: 10px;
   margin: 5px 10px;
-  font-size: 14px;
   font-weight: bold;
   color: black;
   text-align: center;
@@ -76,4 +75,15 @@ svg {
 
 g {
   pointer-events: none;
+}
+
+#width-val,
+#height-val {
+  margin: 5px;
+  font-size: 1.2rem;
+  border: solid 1px #808080;
+}
+
+#size-mode-button {
+  font-size: 1.1rem;
 }
