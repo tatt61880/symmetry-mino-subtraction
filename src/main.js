@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const version = 'Version: 2026.11.05';
+  const version = 'Version: 2026.11.06';
 
   window.addEventListener('load', init, false);
 
@@ -70,8 +70,8 @@
   let elemSizeWarning;
   let elemWidth;
   let elemHeight;
-  let elemSizeModeButton;
-  let elemInspectButton;
+  let elemModePicker;
+  let elemInspectMode;
   let inspectGroup;
   let inspectIndex = 0;
   let elemProcessTimeInfo;
@@ -177,55 +177,54 @@
   }
 
   function updateModeInfo() {
+    elemSizeInfo.hidden = mode === Mode.manual;
+    if (mode === Mode.manual) {
+      elemModeNameInfo.textContent = '手動モード';
+    } else {
+      const selected = elemModePicker.querySelector(`input[value="${mode}"]`);
+      selected.checked = true;
+      elemModeNameInfo.textContent = selected.labels[0].textContent;
+    }
     switch (mode) {
       case Mode.normal:
-        elemModeNameInfo.innerHTML = '通常モード';
         elemModeInfo.innerHTML = `
 濃い点線枠内にポリオミノを描画してください。<br>
 点対称連結ポリオミノ(<span class="aqua">水色</span>)を足すことで、<br>
 全体の図形(<span class="pink">ピンク</span>+<span class="aqua">水色</span>)を<br>
 点対称連結ポリオミノにできる場合、<br>
 その時の中心点を示します。<br>
-「解の確認」では、盤面の点を押して解を選べます。<br>
+「解の確認モード」では、盤面の点を押して解を選べます。<br>
 <br>
 探索手法の概要は<a href="https://github.com/tatt61880/symmetry-mino-subtraction#readme">GitHubのreadme</a>をご覧ください。`;
         break;
       case Mode.size:
-        elemModeNameInfo.innerHTML = 'サイズ変更モード';
         elemModeInfo.innerHTML = 'クリック位置に応じて盤面を拡大縮小するモードです。';
         break;
       case Mode.inspect:
-        elemModeNameInfo.textContent = '解の確認';
-        elemModeInfo.textContent = '見たい中心点を押してください。数字付きの点を繰り返し押すと、同じ中心の別の解に切り替わります。';
+        elemModeInfo.innerHTML = '見たい中心点を押してください。<br>数字付きの点を繰り返し押すと、同じ中心の別の解に切り替わります。';
         break;
       case Mode.manual:
-        elemModeNameInfo.innerHTML = '手動モード';
         elemModeInfo.innerHTML = `
 <span class="pink">ピンク</span>を固定し、<span class="aqua">水色</span>を自ら描画するモードです。<br>
-<a href="${getUrlInfo()}">通常モードに戻す</a>`;
+<a href="${getUrlInfo()}">描画モードに戻る</a>`;
         break;
     }
 
-    elemSizeModeButton.textContent = mode === Mode.size ? 'サイズ変更を終了' : 'サイズ変更';
-    elemSizeModeButton.setAttribute('aria-pressed', mode === Mode.size);
-    updateInspectButton();
-    elemSizeInfo.hidden = mode === Mode.manual;
+    updateInspectAvailability();
   }
 
-  function updateInspectButton() {
-    elemInspectButton.textContent = mode === Mode.inspect ? '描画に戻る' : '解の確認';
-    elemInspectButton.setAttribute('aria-pressed', mode === Mode.inspect);
-    elemInspectButton.disabled = !points.length && mode !== Mode.inspect;
+  function updateInspectAvailability() {
+    elemInspectMode.disabled = !points.length && mode !== Mode.inspect;
   }
 
-  function toggleMode(e, target) {
+  function changeMode(e) {
     if (drawingPointer !== undefined && elemSvg.hasPointerCapture(drawingPointer)) {
       elemSvg.releasePointerCapture(drawingPointer);
     }
     drawingPointer = undefined;
     prev = undefined;
     inspectGroup = undefined;
-    mode = mode === target ? Mode.normal : target;
+    mode = e.target.value;
     updateModeInfo();
     draw(e);
   }
@@ -270,8 +269,8 @@
     elemSizeWarning = document.getElementById('size-warning');
     elemWidth = document.getElementById('width-val');
     elemHeight = document.getElementById('height-val');
-    elemSizeModeButton = document.getElementById('size-mode-button');
-    elemInspectButton = document.getElementById('inspect-button');
+    elemModePicker = document.getElementById('mode-picker');
+    elemInspectMode = document.getElementById('inspect-mode');
 
     elemProcessTimeInfo = document.getElementById('process-time-info');
     elemSvg = document.getElementById('svg-board');
@@ -303,8 +302,7 @@
     elemSvg.addEventListener('lostpointercapture', pointerup);
     elemWidth.addEventListener('change', changeSize);
     elemHeight.addEventListener('change', changeSize);
-    elemSizeModeButton.addEventListener('click', (e) => toggleMode(e, Mode.size));
-    elemInspectButton.addEventListener('click', (e) => toggleMode(e, Mode.inspect));
+    elemModePicker.addEventListener('change', changeMode);
   }
 
   function getCursorPos(elem, e) {
@@ -991,7 +989,7 @@
         break;
     }
     const endTime = Date.now();
-    updateInspectButton();
+    updateInspectAvailability();
     elemProcessTimeInfo.innerHTML = `
 処理時間: ${endTime - startTime}ミリ秒<br>
 解となる中心点数(濃い点線枠内): ${points.length}点<br>

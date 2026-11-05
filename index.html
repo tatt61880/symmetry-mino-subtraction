@@ -6,8 +6,8 @@
   <title>点対称ポリオミノの引き算</title>
   <link rel="icon" type="image/png" href="./images/favicon.png?2023.10.27">
   <link rel="apple-touch-icon" sizes="152x152" href="./images/apple-touch-icon.png?2023.10.27">
-  <link rel="stylesheet" href="./css/main.css?2026.11.05">
-  <script src="./src/main.js?2026.11.05" defer></script>
+  <link rel="stylesheet" href="./css/main.css?2026.11.06">
+  <script src="./src/main.js?2026.11.06" defer></script>
 </head>
 <body>
   <main id="contents">
@@ -20,10 +20,11 @@
         <label>横 <input type="number" id="width-val" min="1"></label>
         <label>縦 <input type="number" id="height-val" min="1"></label>
       </div>
-      <div>
-        <button id="size-mode-button" type="button" aria-pressed="false">サイズ変更</button>
-        <button id="inspect-button" type="button" aria-pressed="false">解の確認</button>
-      </div>
+      <fieldset id="mode-picker" aria-label="操作モード">
+        <label><input type="radio" name="mode" value="size"><span>サイズ変更<wbr>モード</span></label>
+        <label><input type="radio" name="mode" value="normal" checked><span>描画<wbr>モード</span></label>
+        <label><input type="radio" name="mode" value="inspect" id="inspect-mode"><span>解の確認<wbr>モード</span></label>
+      </fieldset>
     </div>
     <p id="size-warning" role="status"></p>
     <p id="process-time-info"></p>

@@ -48,41 +48,67 @@ h2 {
 
 #size-info:not([hidden]) {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
   align-items: center;
   justify-content: center;
 }
 
-input,
-button {
+input[type="number"] {
   box-sizing: border-box;
+  width: 3.5rem;
   min-height: 36px;
+  padding-left: 6px;
   font: inherit;
   color: inherit;
   border: 1px solid #72869a;
   border-radius: 6px;
 }
 
-input {
-  width: 3.5rem;
-  padding-left: 6px;
+#mode-picker {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
 }
 
-button {
-  padding: 4px 12px;
+#mode-picker label {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 2px 6px;
+  line-height: 1.25;
+  word-break: keep-all;
   cursor: pointer;
   background-color: #f4f8fc;
+  border: 1px solid #72869a;
+  border-radius: 6px;
 }
 
-button[aria-pressed="true"] {
+#mode-picker input {
+  flex: none;
+  margin: 0;
+  accent-color: #215a85;
+}
+
+#mode-picker label:has(:checked) {
   color: white;
   background-color: #215a85;
 }
 
-button:disabled {
+#mode-picker label:has(:disabled) {
   color: #647487;
   cursor: default;
+}
+
+#mode-picker label:focus-within {
+  outline: 2px solid #215a85;
+  outline-offset: 1px;
 }
 
 span.aqua {
