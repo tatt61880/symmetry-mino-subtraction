@@ -1,14 +1,15 @@
 (function () {
   'use strict';
-  const version = 'Version: 2026.04.25';
+  const version = 'Version: 2026.11.05';
 
   window.addEventListener('load', init, false);
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
 
-  let prev = { x: -1, y: -1 };
+  let prev;
   let drawingState;
-  let drawingFlag = false;
+  let drawingPointer;
+  const maxBoardArea = 1024;
   let width = 6;
   let height = 6;
   let width2;
@@ -29,7 +30,6 @@
     stateB: 'aqua',
 
     // モード
-    normalMode: 'white',
     sizeMode: '#ffffaa',
 
     // 線
@@ -55,68 +55,53 @@
   const dxs = [0, 1, 0, -1];
 
   const states = [];
+  const solverCells = [];
   let points = [];
 
   const Mode = {
     normal: 'normal',
     size: 'size',
+    inspect: 'inspect',
     manual: 'manual',
   };
   let mode = Mode.normal;
 
   let elemSizeInfo;
+  let elemSizeWarning;
   let elemWidth;
   let elemHeight;
   let elemSizeModeButton;
+  let elemInspectButton;
+  let inspectGroup;
+  let inspectIndex = 0;
   let elemProcessTimeInfo;
   let elemSvg;
   let elemUrlInfo;
   let elemModeNameInfo;
   let elemModeInfo;
 
-  function analyzeUrl() {
-    const res = {
-      width,
-      height,
-      blockStr: '',
-      mode,
-    };
-    const queryStrs = location.href.split('?')[1];
-    if (queryStrs === undefined) return res;
-    for (const queryStr of queryStrs.split('&')) {
-      const paramArray = queryStr.split('=');
-      if (paramArray.length !== 2) continue;
-      const paramName = paramArray[0];
-      const paramVal = paramArray[1];
-      switch (paramName) {
-        case 'w':
-          res.width = Number(paramVal);
-          break;
-        case 'h':
-          res.height = Number(paramVal);
-          break;
-        case 's':
-          res.blockStr = paramVal;
-          break;
-        case 'm':
-          res.mode = paramVal;
-          break;
-      }
-    }
-    return res;
+  function validDimension(value) {
+    return Number.isInteger(value) && value >= 1 && value <= maxBoardArea;
+  }
+
+  function validSize(w, h) {
+    return validDimension(w) && validDimension(h) && w * h <= maxBoardArea;
+  }
+
+  function showSizeWarning() {
+    elemSizeWarning.textContent = `縦・横は正の整数、描画枠は合計${maxBoardArea}マスまでです。現在のサイズは${width}×${height}です。`;
   }
 
   function getUrlInfo() {
-    return location.href.split('?')[0] + `?w=${width}&h=${height}&s=${getBlockStr()}`;
+    const url = new URL(location.href);
+    url.hash = '';
+    url.search = new URLSearchParams({ w: width, h: height, s: getBlockStr() });
+    return url.href;
   }
 
   function updateUrlInfo() {
-    if (mode === Mode.manual) {
-      elemUrlInfo.innerHTML = '';
-    } else {
-      const url = getUrlInfo();
-      elemUrlInfo.innerHTML = `<a href="${url}">現在の盤面のURL</a>`;
-    }
+    elemUrlInfo.hidden = mode === Mode.manual;
+    elemUrlInfo.href = getUrlInfo();
   }
 
   function getBlockStr() {
@@ -133,6 +118,8 @@
   }
 
   function applyBlockStr(e, str, dx, dy) {
+    solverCells.length = 0;
+    states.length = height3;
     for (let y = 0; y < height3; ++y) {
       states[y] = [];
       for (let x = 0; x < width3; ++x) {
@@ -165,16 +152,26 @@
     height2 = h * 2;
     height3 = h * 3;
     height4 = h * 4;
+    elemSvg.setAttribute('viewBox', `0 0 ${size.block * width3} ${size.block * height3}`);
     elemSvg.setAttribute('width', size.block * width3);
     elemSvg.setAttribute('height', size.block * height3);
+    elemSizeWarning.textContent = '';
+    elemWidth.max = Math.floor(maxBoardArea / h);
+    elemHeight.max = Math.floor(maxBoardArea / w);
     elemWidth.value = w;
     elemHeight.value = h;
   }
 
   function changeSize(e) {
+    const w = elemWidth.valueAsNumber;
+    const h = elemHeight.valueAsNumber;
+    if (!validSize(w, h)) {
+      showSizeWarning();
+      elemWidth.value = width;
+      elemHeight.value = height;
+      return;
+    }
     const blockStr = getBlockStr();
-    const w = Number(elemWidth.value);
-    const h = Number(elemHeight.value);
     setSize(w, h);
     applyBlockStr(e, blockStr, 0, 0);
   }
@@ -189,12 +186,17 @@
 全体の図形(<span class="pink">ピンク</span>+<span class="aqua">水色</span>)を<br>
 点対称連結ポリオミノにできる場合、<br>
 その時の中心点を示します。<br>
+「解の確認」では、盤面の点を押して解を選べます。<br>
 <br>
 探索手法の概要は<a href="https://github.com/tatt61880/symmetry-mino-subtraction#readme">GitHubのreadme</a>をご覧ください。`;
         break;
       case Mode.size:
         elemModeNameInfo.innerHTML = 'サイズ変更モード';
         elemModeInfo.innerHTML = 'クリック位置に応じて盤面を拡大縮小するモードです。';
+        break;
+      case Mode.inspect:
+        elemModeNameInfo.textContent = '解の確認';
+        elemModeInfo.textContent = '見たい中心点を押してください。数字付きの点を繰り返し押すと、同じ中心の別の解に切り替わります。';
         break;
       case Mode.manual:
         elemModeNameInfo.innerHTML = '手動モード';
@@ -204,29 +206,27 @@
         break;
     }
 
-    if (mode === Mode.size) {
-      elemSizeModeButton.style.backgroundColor = color.sizeMode;
-      elemSizeModeButton.innerText = 'サイズ変更モードを無効にする';
-    } else {
-      elemSizeModeButton.style.backgroundColor = color.normalMode;
-      elemSizeModeButton.innerText = 'サイズ変更モードを有効にする';
-    }
-
-    elemSizeInfo.style.display = mode === Mode.manual ? 'none' : 'block';
+    elemSizeModeButton.textContent = mode === Mode.size ? 'サイズ変更を終了' : 'サイズ変更';
+    elemSizeModeButton.setAttribute('aria-pressed', mode === Mode.size);
+    updateInspectButton();
+    elemSizeInfo.hidden = mode === Mode.manual;
   }
 
-  function toggleSizeMode(e) {
-    e.preventDefault();
-    switch (mode) {
-      case Mode.normal:
-        mode = Mode.size;
-        break;
-      case Mode.size:
-        mode = Mode.normal;
-        break;
-    }
-    updateModeInfo();
+  function updateInspectButton() {
+    elemInspectButton.textContent = mode === Mode.inspect ? '描画に戻る' : '解の確認';
+    elemInspectButton.setAttribute('aria-pressed', mode === Mode.inspect);
+    elemInspectButton.disabled = !points.length && mode !== Mode.inspect;
+  }
 
+  function toggleMode(e, target) {
+    if (drawingPointer !== undefined && elemSvg.hasPointerCapture(drawingPointer)) {
+      elemSvg.releasePointerCapture(drawingPointer);
+    }
+    drawingPointer = undefined;
+    prev = undefined;
+    inspectGroup = undefined;
+    mode = mode === target ? Mode.normal : target;
+    updateModeInfo();
     draw(e);
   }
 
@@ -267,9 +267,11 @@
     document.getElementById('version-info').innerText = version;
 
     elemSizeInfo = document.getElementById('size-info');
+    elemSizeWarning = document.getElementById('size-warning');
     elemWidth = document.getElementById('width-val');
     elemHeight = document.getElementById('height-val');
     elemSizeModeButton = document.getElementById('size-mode-button');
+    elemInspectButton = document.getElementById('inspect-button');
 
     elemProcessTimeInfo = document.getElementById('process-time-info');
     elemSvg = document.getElementById('svg-board');
@@ -278,49 +280,42 @@
     elemModeNameInfo = document.getElementById('mode-name-info');
     elemModeInfo = document.getElementById('mode-info');
 
-    const res = analyzeUrl();
-    mode = res.mode;
-    setSize(res.width, res.height);
-    applyBlockStr(e, res.blockStr, 0, 0);
+    const params = new URLSearchParams(location.search);
+    const w = params.has('w') ? Number(params.get('w')) : width;
+    const h = params.has('h') ? Number(params.get('h')) : height;
+    const newWidth = validDimension(w) ? w : width;
+    const newHeight = validDimension(h) ? h : height;
+    const urlMode = params.get('m');
+    if (Object.values(Mode).includes(urlMode)) mode = urlMode;
+    if (validSize(newWidth, newHeight)) {
+      setSize(newWidth, newHeight);
+    } else {
+      setSize(width, height);
+    }
+    if (!validSize(w, h)) showSizeWarning();
+    applyBlockStr(e, params.get('s') || '', 0, 0);
     updateModeInfo();
 
-    {
-      if (window.ontouchstart === undefined) {
-        elemSvg.addEventListener('mousedown', pointerdown, false);
-      } else {
-        elemSvg.addEventListener('touchstart', pointerdown, false);
-      }
-      if (window.ontouchmove === undefined) {
-        elemSvg.addEventListener('mousemove', pointermove, false);
-      } else {
-        elemSvg.addEventListener('touchmove', pointermove, false);
-      }
-      if (window.ontouchend === undefined) {
-        elemSvg.addEventListener('mouseup', pointerup, false);
-        document.addEventListener('mouseup', pointerup, false);
-      } else {
-        elemSvg.addEventListener('touchend', pointerup, false);
-        document.addEventListener('touchend', pointerup, false);
-      }
-
-      elemWidth.addEventListener('change', changeSize, false);
-      elemHeight.addEventListener('change', changeSize, false);
-      elemSizeModeButton.addEventListener('click', toggleSizeMode, false);
-    }
+    elemSvg.addEventListener('pointerdown', pointerdown);
+    elemSvg.addEventListener('pointermove', pointermove);
+    elemSvg.addEventListener('pointerup', pointerup);
+    elemSvg.addEventListener('pointercancel', pointerup);
+    elemSvg.addEventListener('lostpointercapture', pointerup);
+    elemWidth.addEventListener('change', changeSize);
+    elemHeight.addEventListener('change', changeSize);
+    elemSizeModeButton.addEventListener('click', (e) => toggleMode(e, Mode.size));
+    elemInspectButton.addEventListener('click', (e) => toggleMode(e, Mode.inspect));
   }
 
   function getCursorPos(elem, e) {
-    const bcRect = elem.getBoundingClientRect();
-    let cursorX;
-    let cursorY;
-    if (e.touches !== undefined) {
-      cursorX = e.touches[0].clientX - bcRect.left;
-      cursorY = e.touches[0].clientY - bcRect.top;
-    } else {
-      cursorX = e.clientX - bcRect.left;
-      cursorY = e.clientY - bcRect.top;
+    const rect = elem.getBoundingClientRect();
+    if (!Number.isFinite(e.clientX)) {
+      return { x: size.block * width3 / 2, y: size.block * height3 / 2 };
     }
-    return { x: cursorX, y: cursorY };
+    return {
+      x: (e.clientX - rect.left) * size.block * width3 / rect.width,
+      y: (e.clientY - rect.top) * size.block * height3 / rect.height,
+    };
   }
 
   function createLine(param) {
@@ -383,6 +378,20 @@
     }
   }
 
+  function nearestGroup(e) {
+    const pos = getCursorPos(elemSvg, e);
+    let nearest;
+    let minDist = Infinity;
+    for (const group of points) {
+      const dist = (pos.x - size.block * group[0].cx / 2) ** 2 + (pos.y - size.block * group[0].cy / 2) ** 2;
+      if (dist < minDist) {
+        nearest = group;
+        minDist = dist;
+      }
+    }
+    return nearest;
+  }
+
   let step = 0;
   function draw(e) {
     while (elemSvg.firstChild) {
@@ -397,17 +406,17 @@
     step = (step + 1) % Number.MAX_SAFE_INTEGER;
     if (mode !== Mode.manual) {
       removeB();
-      if (mode !== Mode.size && points.length !== 0) {
-        const cursorPos = getCursorPos(elemSvg, e);
-        let minDist = -1;
-        for (const point of points) {
-          const dist = (cursorPos.x - size.block * point[0].cx / 2) ** 2 + (cursorPos.y - size.block * point[0].cy / 2) ** 2;
-          if (minDist === -1 || dist < minDist) {
-            minDist = dist;
-            selectedPoint = point[counterId % point.length];
-          }
-        }
-        if (!(selectedPoint.cx === selectedPoint.cbx && selectedPoint.cy === selectedPoint.cby)) {
+      if (mode === Mode.inspect && inspectGroup) {
+        selectedPoint = inspectGroup[inspectIndex];
+      } else if (mode === Mode.normal && points.length) {
+        const group = nearestGroup(e);
+        selectedPoint = group[counterId % group.length];
+      }
+      if (selectedPoint) {
+        if (selectedPoint.cells) {
+          addB(selectedPoint.cells);
+          centerB = { x: selectedPoint.cx, y: selectedPoint.cy };
+        } else if (!(selectedPoint.cx === selectedPoint.cbx && selectedPoint.cy === selectedPoint.cby)) {
           const firstB = [];
           pointSymmetryA(firstB, selectedPoint.cx, selectedPoint.cy);
           searchSolutionSub(selectedPoint.cx, selectedPoint.cy, selectedPoint.cbx, selectedPoint.cby, firstB);
@@ -460,9 +469,9 @@
 
     // 点
     for (const point of points) {
-      const isSelected = point[counterId % point.length] === selectedPoint;
+      const isSelected = point.includes(selectedPoint);
       const pointColor = isSelected ? color.selected : color.normal;
-      if (point[0].cx === point[0].cbx && point[0].cy === point[0].cby) {
+      if (!point[0].cells && point[0].cx === point[0].cbx && point[0].cy === point[0].cby) {
         const len = 0.35;
         {
           const line = createLine({ x1: point[0].cx / 2.0 - len, y1: point[0].cy / 2.0, x2: point[0].cx / 2.0 + len, y2: point[0].cy / 2.0 });
@@ -495,7 +504,8 @@
     }
 
     if (centerB !== undefined) {
-      const circle = createCircle({ cx: centerB.x / 2, cy: centerB.y / 2, r: size.centerB });
+      const radius = selectedPoint.cells ? size.centerB + 5 : size.centerB;
+      const circle = createCircle({ cx: centerB.x / 2, cy: centerB.y / 2, r: radius });
       circle.setAttribute('fill', 'none');
       circle.setAttribute('stroke', color.centerB);
       g.appendChild(circle);
@@ -548,18 +558,9 @@
     elemSvg.appendChild(g);
   }
 
-  function clamp(val, min, max) {
-    if (val < min) return min;
-    if (val > max) return max;
-    return val;
-  }
-
-  // カーソル位置の座標を得る
   function getCurXY(e) {
-    const cursorPos = getCursorPos(elemSvg, e);
-    const x = clamp(Math.floor(cursorPos.x / size.block), 0, width3 - 1);
-    const y = clamp(Math.floor(cursorPos.y / size.block), 0, height3 - 1);
-    return { x, y };
+    const pos = getCursorPos(elemSvg, e);
+    return { x: Math.floor(pos.x / size.block), y: Math.floor(pos.y / size.block) };
   }
 
   // 中心付近の枠内およびその周上か否か。
@@ -569,27 +570,24 @@
     return true;
   }
 
-  function pointerup() {
-    drawingFlag = false;
-  }
-
-  // タッチ環境において、画面端付近か否か。
-  function isTouchScreenNearEdge(e) {
-    if (e.touches === undefined) return false;
-    const x = e.touches[0].clientX;
-    return x < 30; // 画面の左端付近ならtrue
+  function pointerup(e) {
+    if (e.pointerId === drawingPointer) {
+      if (e.type === 'pointerup') pointermove(e);
+      drawingPointer = undefined;
+      prev = undefined;
+    }
   }
 
   function pointerdown(e) {
-    const touches = e.changedTouches;
-    if (touches !== undefined && touches.length > 1) {
-      return;
-    }
-    if (isTouchScreenNearEdge(e)) {
+    if (!e.isPrimary || e.button !== 0 || drawingPointer !== undefined) return;
+    if (mode === Mode.inspect) {
+      const group = nearestGroup(e);
+      if (!group) return;
+      inspectIndex = group === inspectGroup ? (inspectIndex + 1) % group.length : 0;
+      inspectGroup = group;
       draw(e);
       return;
     }
-
     if (mode === Mode.size) {
       const cursorPos = getCursorPos(elemSvg, e);
       const x = cursorPos.x - size.block * width3 / 2;
@@ -616,46 +614,58 @@
           if (y < 0) dy += dd;
         }
       }
+      if (!validSize(newWidth, newHeight)) {
+        showSizeWarning();
+        return;
+      }
       setSize(newWidth, newHeight);
       applyBlockStr(e, blockStr, dx, dy);
-      draw(e);
       return;
     }
     e.preventDefault();
 
     const cur = getCurXY(e);
-    if (mode !== Mode.manual && !isInsideCenterArea(cur.x, cur.y)) {
+    if (!canDrawAt(cur)) {
       draw(e);
       return;
     }
 
     const targetState = mode === Mode.normal ? stateA : stateB;
     drawingState = states[cur.y][cur.x] === targetState ? stateNone : targetState;
-    drawingFlag = true;
-
-    prev = { x: -1, y: -1 };
+    drawingPointer = e.pointerId;
+    elemSvg.setPointerCapture(e.pointerId);
+    prev = undefined;
     pointermove(e);
   }
 
+  function canDrawAt({ x, y }) {
+    if (mode === Mode.normal) return isInsideCenterArea(x, y);
+    return x >= 0 && y >= 0 && x < width3 && y < height3;
+  }
+
   function pointermove(e) {
-    if (mode === Mode.size) return;
-    if (!drawingFlag) {
+    if (!e.isPrimary || mode === Mode.size || mode === Mode.inspect) return;
+    if (drawingPointer === undefined) {
       draw(e);
       return;
     }
-
+    if (e.pointerId !== drawingPointer) return;
     const cur = getCurXY(e);
-    if (mode !== Mode.manual && !isInsideCenterArea(cur.x, cur.y)) return;
-    e.preventDefault();
-
-    if (cur.x === prev.x && cur.y === prev.y) return;
-    prev.x = cur.x;
-    prev.y = cur.y;
-    if (mode === Mode.normal || states[cur.y][cur.x] !== stateA) {
-      states[cur.y][cur.x] = drawingState;
+    const from = prev || cur;
+    const steps = Math.max(Math.abs(cur.x - from.x), Math.abs(cur.y - from.y), 1);
+    let changed = false;
+    // イベントの間に通過したマスを、1回の探索でまとめて塗る。
+    for (let i = 1; i <= steps; ++i) {
+      const x = from.x + Math.round((cur.x - from.x) * i / steps);
+      const y = from.y + Math.round((cur.y - from.y) * i / steps);
+      if (!canDrawAt({ x, y })) continue;
+      const state = states[y][x];
+      if (state === drawingState || (mode === Mode.manual && isA(state))) continue;
+      states[y][x] = drawingState;
+      changed = true;
     }
-
-    update(e);
+    prev = cur;
+    if (changed) update(e);
   }
 
   function isAorB(x) {
@@ -714,10 +724,11 @@
       }
     }
 
-    const st = new Stack();
+    if (y0 === undefined) return false;
+    const st = [];
     st.push([x0, y0]);
     statesTemp[y0][x0] = stateNone;
-    while (!st.empty()) {
+    while (st.length > 0) {
       const xy = st.pop();
       for (let i = 0; i < 4; i++) {
         const xx = xy[0] + dxs[i];
@@ -751,7 +762,6 @@
           const by = cy - y - 1;
           // 点(x, y)と点(cx, cy)は中央付近の枠内にある前提。⇒点(bx, by)はあらかじめ用意したエリア外にはみ出ない。
           if (states[by][bx] === stateNone) {
-            states[by][bx] = stateB;
             firstB.push({ x: bx, y: by });
           }
         }
@@ -775,8 +785,7 @@
 
       switch (states[by][bx]) {
         case stateNone:
-          states[by][bx] = stateB;
-          nextB.push({ x: bx, y: by });
+          nextB.push(markB({ x: bx, y: by }));
           break;
         case stateA:
           if (checkFlag) return undefined;
@@ -787,19 +796,20 @@
   }
 
   function removeB() {
-    for (let y = 0; y < height3; ++y) {
-      for (let x = 0; x < width3; ++x) {
-        if (states[y][x] === stateB) {
-          states[y][x] = stateNone;
-        }
-      }
+    for (const p of solverCells) {
+      if (isB(states[p.y][p.x])) states[p.y][p.x] = stateNone;
     }
+    solverCells.length = 0;
   }
 
-  function addB(arrB) {
-    for (const p of arrB) {
-      states[p.y][p.x] = stateB;
-    }
+  function markB(cell) {
+    states[cell.y][cell.x] = stateB;
+    solverCells.push(cell);
+    return cell;
+  }
+
+  function addB(cells) {
+    for (const cell of cells) markB(cell);
   }
 
   // 解として正しいか。
@@ -827,51 +837,90 @@
     return isOk();
   }
 
-  function addPoint(cx, cy, cbx, cby) {
-    if (points.length !== 0 && cx === points[points.length - 1][0].cx && cy === points[points.length - 1][0].cy) {
-      points[points.length - 1].push({ cx, cy, cbx, cby });
-      return;
+  function addPoint(cx, cy, cbx, cby, cells) {
+    const point = { cx, cy, cbx, cby, cells };
+    const last = points[points.length - 1];
+    if (last && cx === last[0].cx && cy === last[0].cy) {
+      last.push(point);
+    } else {
+      points.push([point]);
     }
-    points.push([{ cx, cy, cbx, cby }]);
   }
 
-  // 点(cx, cy)を図形(AUB)の点対称中心とする解が存在するか否か。
-  function searchSolution(cx, cy, isCenterA) {
+  // 同心の解では、B は A の補集合のうち、点対称な連結成分ひとつに収まる。
+  // その成分全体を採用しても対称性・連結性は保たれる。
+  function findCenteredAddition(cx, cy, minX, minY, maxX, maxY) {
+    const seen = new Set();
+    for (let y = minY; y <= maxY; ++y) {
+      for (let x = minX; x <= maxX; ++x) {
+        if (isA(states[y][x]) || seen.has(y * width3 + x)) continue;
+        const cells = [{ x, y }];
+        seen.add(y * width3 + x);
+        for (let i = 0; i < cells.length; ++i) {
+          for (let dir = 0; dir < 4; ++dir) {
+            const xx = cells[i].x + dxs[dir];
+            const yy = cells[i].y + dys[dir];
+            if (xx < minX || xx > maxX || yy < minY || yy > maxY) continue;
+            const key = yy * width3 + xx;
+            if (isA(states[yy][xx]) || seen.has(key)) continue;
+            seen.add(key);
+            cells.push({ x: xx, y: yy });
+          }
+        }
+        addB(cells);
+        // 対称移動は連結成分を連結成分に写すので、代表1マスで判定できる。
+        const valid = isB(states[cy - y - 1][cx - x - 1]) && isConnected(isAorB);
+        removeB();
+        if (valid) return cells;
+      }
+    }
+  }
+
+  function searchSolution(cx, cy, shape) {
     removeB();
     const firstB = [];
     pointSymmetryA(firstB, cx, cy);
-    if (isCenterA) {
-      if (firstB.length === 0) {
-        if (isPointSymmetry(isA)) {
-          addPoint(cx, cy, cx, cy);
-          return true;
-        }
+    if (firstB.length === 0) {
+      if (isConnected(isA)) {
+        addPoint(cx, cy, cx, cy);
+      } else {
+        // まず A の外接長方形内で探し、見つからなければ盤面内の対称な範囲まで広げる。
+        const minX = Math.max(0, cx - width3);
+        const minY = Math.max(0, cy - height3);
+        const cells = findCenteredAddition(cx, cy, shape.minX, shape.minY, cx - shape.minX - 1, cy - shape.minY - 1)
+          || findCenteredAddition(cx, cy, minX, minY, cx - minX - 1, cy - minY - 1);
+        if (cells) addPoint(cx, cy, cx, cy, cells);
       }
+      return;
     }
 
-    let bMinX = width3;
-    let bMaxX = 0;
-    let bMinY = height3;
-    let bMaxY = 0;
-    for (const p of firstB) {
-      bMinX = Math.min(bMinX, p.x);
-      bMaxX = Math.max(bMaxX, p.x);
-      bMinY = Math.min(bMinY, p.y);
-      bMaxY = Math.max(bMaxY, p.y);
+    // 点対称な図形の重心は対称中心。各マスの中心は2倍座標で数える。
+    // |B| * (cbx - cx) = |A| * cx - sumX（y も同様）。
+    const dx = shape.count * cx - shape.sumX;
+    const dy = shape.count * cy - shape.sumY;
+    const limit = Math.min(width3 * height3 - shape.count, Math.max(Math.abs(dx), Math.abs(dy)));
+    for (let n = firstB.length; n <= limit; ++n) {
+      if (dx % n !== 0 || dy % n !== 0) continue;
+      const cbx = cx + dx / n;
+      const cby = cy + dy / n;
+      if (cbx < 1 || cbx >= width3 * 2 || cby < 1 || cby >= height3 * 2) continue;
+      if (searchSolutionSub(cx, cy, cbx, cby, firstB)) addPoint(cx, cy, cbx, cby);
     }
+  }
 
-    for (let cby = bMaxY + 1; cby <= bMinY + height3; ++cby) {
-      for (let cbx = bMaxX + 1; cbx <= bMinX + width3; ++cbx) {
-        if (searchSolutionSub(cx, cy, cbx, cby, firstB)) {
-          addPoint(cx, cy, cbx, cby);
-        }
-        /*
-        debugDraw(states,
-          [{x: cx, y: cy, r: size.selected, fill: color.selected, stroke: 'none'},
-           {x: cbx, y: cby, r: size.centerB, fill: 'none', stroke: color.centerB}]);
-        */
+  function getShapeInfo() {
+    const shape = { count: 0, sumX: 0, sumY: 0, minX: width2, minY: height2 };
+    for (let y = height; y < height2; ++y) {
+      for (let x = width; x < width2; ++x) {
+        if (!isA(states[y][x])) continue;
+        ++shape.count;
+        shape.sumX += 2 * x + 1;
+        shape.sumY += 2 * y + 1;
+        shape.minX = Math.min(shape.minX, x);
+        shape.minY = Math.min(shape.minY, y);
       }
     }
+    return shape;
   }
 
   function getCenter(isX) {
@@ -909,13 +958,14 @@
       return;
     }
     const startTime = Date.now();
+    inspectGroup = undefined;
     points = [];
-    const centerA = getCenter(isA);
-    const countA = count(isA);
-    switch (countA) {
+    const shape = getShapeInfo();
+    switch (shape.count) {
       case 0:
         break;
-      case 1:
+      case 1: {
+        const centerA = { x: shape.sumX, y: shape.sumY };
         addPoint(centerA.x, centerA.y, centerA.x, centerA.y);
         for (let cx = width2; cx <= width4; ++cx) {
           if (cx === centerA.x) continue;
@@ -928,43 +978,26 @@
           addPoint(centerA.x, cy, centerA.x, cy + dy);
         }
         break;
+      }
       default:
         for (let cy = height2; cy <= height4; ++cy) {
           for (let cx = width2; cx <= width4; ++cx) {
-            const isCenterA = cx === centerA.x && cy === centerA.y;
-            searchSolution(cx, cy, isCenterA);
+            searchSolution(cx, cy, shape);
           }
+        }
+        for (const group of points) {
+          group.sort((a, b) => a.cby - b.cby || a.cbx - b.cbx);
         }
         break;
     }
     const endTime = Date.now();
+    updateInspectButton();
     elemProcessTimeInfo.innerHTML = `
 処理時間: ${endTime - startTime}ミリ秒<br>
 解となる中心点数(濃い点線枠内): ${points.length}点<br>
-<a href="${getUrlInfo()}&m=manual" target="_blank">この盤面を手動モードで開く</a> (別タブで開きます)`;
+<a href="${getUrlInfo()}&m=manual" target="_blank" rel="noopener">手動モードで開く（別タブ）</a>`;
     updateUrlInfo();
     draw(e);
   }
 
-  class Stack {
-    constructor() {
-      this.data = [];
-    }
-    push(val) {
-      this.data.push(val);
-      return val;
-    }
-    pop() {
-      return this.data.pop();
-    }
-    top() {
-      return this.data[this.data.length - 1];
-    }
-    size() {
-      return this.data.length;
-    }
-    empty() {
-      return this.data.length === 0;
-    }
-  }
 })();

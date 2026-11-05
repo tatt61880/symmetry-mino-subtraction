@@ -1,49 +1,88 @@
 @charset "UTF-8";
 
-html {
-  touch-action: manipulation;
-}
-
 body {
   margin: 0;
-  background-color: #ccffff;
+  font-family: sans-serif;
+  line-height: 1.5;
+  color: #192f4b;
+  background-color: #edf5fa;
 }
 
 #contents {
-  max-width: 534px;
+  box-sizing: border-box;
+  width: fit-content;
+  min-width: min(100%, 534px);
+  max-width: 100%;
+  padding: 0 12px;
   margin: 0 auto;
+  text-align: center;
   background-color: white;
 }
 
-#version-info {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: gray;
-}
-
+h1,
+h2,
 footer {
-  position: relative;
-  font-size: 1rem;
-  font-weight: bold;
-  color: #000055;
-  text-align: center;
-  background-color: #c0cbff;
+  padding: 8px;
+  margin: 0 -12px;
+  color: #153659;
+  background-color: #dbeaf7;
 }
 
-div {
-  margin: auto;
+h1 {
+  font-size: clamp(1.15rem, 4vw, 1.6rem);
 }
 
-h3 {
-  margin: 0;
-  font-weight: bold;
-  color: #000055;
-  background-color: #c0cbff;
+h2 {
+  font-size: 1.15rem;
+}
+
+#version-info {
+  margin: 6px 0 12px;
+  font-size: 0.9rem;
+  color: #4a5c70;
+}
+
+#size-warning:empty {
+  display: none;
+}
+
+#size-info:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+input,
+button {
+  box-sizing: border-box;
+  min-height: 36px;
+  font: inherit;
+  color: inherit;
+  border: 1px solid #72869a;
+  border-radius: 6px;
 }
 
 input {
-  width: 40px;
-  height: 30px;
+  width: 3.5rem;
+  padding-left: 6px;
+}
+
+button {
+  padding: 4px 12px;
+  cursor: pointer;
+  background-color: #f4f8fc;
+}
+
+button[aria-pressed="true"] {
+  color: white;
+  background-color: #215a85;
+}
+
+button:disabled {
+  color: #647487;
+  cursor: default;
 }
 
 span.aqua {
@@ -54,36 +93,15 @@ span.pink {
   background-color: pink;
 }
 
-a.button {
-  display: inline-block;
-  padding: 10px;
-  margin: 5px 10px;
-  font-weight: bold;
-  color: black;
-  text-align: center;
-  text-decoration: none;
-  vertical-align: middle;
-  cursor: pointer;
-  border: 2px solid;
-  border-radius: 25px;
-}
-
-svg {
-  padding: 0;
-  margin: 5px 15px 2px;
+#svg-board {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  touch-action: none;
+  user-select: none;
 }
 
 g {
   pointer-events: none;
-}
-
-#width-val,
-#height-val {
-  margin: 5px;
-  font-size: 1.2rem;
-  border: solid 1px #808080;
-}
-
-#size-mode-button {
-  font-size: 1.1rem;
 }
